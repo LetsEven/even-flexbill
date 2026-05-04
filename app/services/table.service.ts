@@ -20,6 +20,7 @@ export interface ApiResponse<T = any> {
 
 export interface DishOrder {
   dish_order_id: string;
+  menu_item_id?: number | null;
   item: string;
   quantity: number;
   price: number;

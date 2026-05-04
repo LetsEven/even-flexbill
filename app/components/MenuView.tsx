@@ -14,13 +14,20 @@ import MenuHeader from "@/app/components/headers/MenuHeader";
 import MenuCategory from "@/app/components/MenuCategory";
 import ErrorScreen from "@/app/components/ErrorScreen";
 import Loader from "@/app/components/UI/Loader";
-import { Search, ShoppingCart, UserCircle, ReceiptText } from "lucide-react";
+import {
+  Search,
+  ShoppingCart,
+  UserCircle,
+  ReceiptText,
+  RefreshCw,
+} from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useTableNavigation } from "@/app/hooks/useTableNavigation";
 import { useCart } from "@/app/context/CartContext";
 import { useRestaurant } from "@/app/context/RestaurantContext";
 import { DEFAULT_IMAGES } from "@/app/constants/images";
 import { useTable } from "@/app/context/TableContext";
+import ReorderModal from "@/app/components/ReorderModal";
 
 const ChatView = lazy(() => import("@/app/components/ChatView"));
 const AuthView = lazy(() => import("./AuthView"));
@@ -95,16 +102,17 @@ function MenuView({ tableNumber }: MenuViewProps) {
   const [isSettingsClosing, setIsSettingsClosing] = useState(false);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [showClosedModal, setShowClosedModal] = useState(false);
+  const [showReorderModal, setShowReorderModal] = useState(false);
   const stickyTriggerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (showPepperChat || showSettingsModal) {
+    if (showPepperChat || showSettingsModal || showReorderModal) {
       lockScroll();
     } else {
       unlockScroll();
     }
     return unlockScroll;
-  }, [showPepperChat, showSettingsModal]);
+  }, [showPepperChat, showSettingsModal, showReorderModal]);
 
   // Precargar chunks lazy después de que la página ya es interactiva
   useEffect(() => {
@@ -276,7 +284,7 @@ function MenuView({ tableNumber }: MenuViewProps) {
           </div>
 
           {/* Name and photo */}
-          <div className="mb-4 md:mb-6 flex flex-col items-center">
+          <div className="flex flex-col items-center">
             <div className="size-28 md:size-36 lg:size-40 rounded-full bg-gray-200 overflow-hidden border border-gray-400 shadow-sm">
               <img
                 src={restaurant.logo_url || DEFAULT_IMAGES.RESTAURANT_LOGO}
@@ -292,6 +300,16 @@ function MenuView({ tableNumber }: MenuViewProps) {
               <h3 className="mt-1 text-black/70 text-xl md:text-2xl lg:text-3xl">
                 Mesa {tableNumber}
               </h3>
+              {Array.isArray(tableState.dishOrders) &&
+                tableState.dishOrders.length > 0 && (
+                  <button
+                    onClick={() => setShowReorderModal(true)}
+                    className="mt-3 bg-[#eab3f4] text-white border border-[#8e8e8e] rounded-full px-3 md:px-4 lg:px-5 py-1 md:py-1.5 text-sm md:text-base lg:text-lg font-medium flex items-center gap-1.5 active:scale-90 transition-all"
+                  >
+                    Reordenar
+                    <RefreshCw className="size-4" />
+                  </button>
+                )}
             </div>
           </div>
 
@@ -536,6 +554,14 @@ function MenuView({ tableNumber }: MenuViewProps) {
           </div>
         </>
       )}
+
+      {/* Reorder Modal */}
+      <ReorderModal
+        isOpen={showReorderModal}
+        onClose={() => setShowReorderModal(false)}
+        dishOrders={tableState.dishOrders}
+        tableNumber={tableNumber}
+      />
 
       {/* Restaurant Closed Modal */}
       <Suspense fallback={null}>
