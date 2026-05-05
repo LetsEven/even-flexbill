@@ -203,7 +203,7 @@ function ReorderModal({
               </button>
             </div>
             <div className="px-6 md:px-8 lg:px-10 pb-4 md:pb-5 flex flex-col">
-              <h2 className="text-xl md:text-2xl lg:text-3xl text-white font-semibold">
+              <h2 className="text-lg md:text-xl lg:text-2xl text-white font-semibold leading-snug">
                 Reordenar
               </h2>
               {tableNumber && (
@@ -211,6 +211,9 @@ function ReorderModal({
                   Mesa {tableNumber}
                 </p>
               )}
+              <p className="text-sm text-white mt-0.5">
+                Selecciona los artículos que deseas volver a ordenar
+              </p>
             </div>
             <div className="border-t border-white/20" />
           </div>
@@ -252,6 +255,31 @@ function ReorderModal({
                           : "bg-white/5 border-white/10"
                       }`}
                     >
+                      {/* Checkbox */}
+                      <div
+                        className="flex-shrink-0 self-center"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (isSelected && cartItem) {
+                            removeItem(cartItem.id);
+                          } else {
+                            handleCardTap(order);
+                          }
+                        }}
+                      >
+                        <div
+                          className={`size-4 md:size-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
+                            isSelected
+                              ? "bg-[#eab3f4] border-[#eab3f4]"
+                              : "bg-transparent border-white/40"
+                          }`}
+                        >
+                          {isSelected && (
+                            <div className="size-1.5 md:size-2 rounded-full bg-white" />
+                          )}
+                        </div>
+                      </div>
+
                       {/* Image */}
                       <div className="flex-shrink-0">
                         <div className="size-16 md:size-20 rounded-sm overflow-hidden bg-gray-300">

@@ -80,6 +80,7 @@ function GuestProviderInternal({ children }: GuestProviderProps) {
           .then((response) => {
             if (response.success) {
               setHasLinkedOrders(true);
+              window.dispatchEvent(new CustomEvent("xquisito:guestOrdersLinked"));
             } else {
               console.error("❌ Failed to link guest orders:", response.error);
             }

@@ -299,22 +299,20 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
     setAsAuthenticated,
   ]);
 
-  // Auto-migrate guest payment methods when user logs in
+  // Auto-migrate guest payment methods after guest orders are linked (GuestContext dispatches this event)
   useEffect(() => {
-    const autoMigrate = async () => {
+    if (!user) return;
+    const handleGuestOrdersLinked = async () => {
       const guestIdInStorage = localStorage.getItem("xquisito-guest-id");
-      if (user && guestIdInStorage && !authLoading) {
-        console.log(
-          "🔄 Auto-triggering payment methods migration after authentication",
-        );
-        // Wait for guest orders linking to complete first (handled in GuestContext)
-        // Then migrate payment methods
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+      if (guestIdInStorage) {
         await migrateGuestPaymentMethods();
       }
     };
-    autoMigrate();
-  }, [user?.id, authLoading]);
+    window.addEventListener("xquisito:guestOrdersLinked", handleGuestOrdersLinked);
+    return () => {
+      window.removeEventListener("xquisito:guestOrdersLinked", handleGuestOrdersLinked);
+    };
+  }, [user?.id]);
 
   const value: PaymentContextType = {
     paymentMethods,

@@ -60,6 +60,39 @@ export interface ProfileData {
 }
 
 class AuthService {
+  private isRefreshing = false;
+  private refreshSubscribers: ((token: string) => void)[] = [];
+
+  private subscribeTokenRefresh(callback: (token: string) => void): void {
+    this.refreshSubscribers.push(callback);
+  }
+
+  private onRefreshed(token: string): void {
+    this.refreshSubscribers.forEach((callback) => callback(token));
+    this.refreshSubscribers = [];
+  }
+
+  async handleTokenRefresh(): Promise<string | null> {
+    try {
+      const result = await this.refreshToken();
+      if (result.success && result.data?.session?.access_token) {
+        return result.data.session.access_token;
+      } else if (result.error === "Error al refrescar el token") {
+        console.warn("⚠️ Network error during token refresh, keeping session");
+        return null;
+      } else {
+        await this.logout();
+        if (typeof window !== "undefined") {
+          window.location.href = "/";
+        }
+        return null;
+      }
+    } catch (error) {
+      console.error("❌ Unexpected error in handleTokenRefresh:", error);
+      return null;
+    }
+  }
+
   // Enviar código OTP al teléfono
   async sendPhoneOTP(phone: string): Promise<AuthResponse> {
     try {
@@ -241,12 +274,40 @@ class AuthService {
     }
   }
 
-  // Refrescar el access token
+  // Refrescar el access token (thread-safe: solo se ejecuta una vez en paralelo)
   async refreshToken(): Promise<AuthResponse> {
+    if (this.isRefreshing) {
+      return new Promise((resolve) => {
+        this.subscribeTokenRefresh((token: string) => {
+          if (token) {
+            resolve({
+              success: true,
+              data: {
+                user: { id: "", accountType: "" },
+                session: {
+                  access_token: token,
+                  refresh_token:
+                    localStorage.getItem("xquisito_refresh_token") || "",
+                  expires_at: parseInt(
+                    localStorage.getItem("xquisito_expires_at") || "0",
+                  ),
+                },
+              },
+            });
+          } else {
+            resolve({ success: false, error: "Token refresh failed" });
+          }
+        });
+      });
+    }
+
+    this.isRefreshing = true;
+
     try {
       const refreshToken = localStorage.getItem("xquisito_refresh_token");
 
       if (!refreshToken) {
+        this.isRefreshing = false;
         return {
           success: false,
           error: "No hay refresh token",
@@ -278,11 +339,17 @@ class AuthService {
             data.data.session.expires_at.toString(),
           );
         }
+        this.onRefreshed(data.data.session.access_token);
+      } else {
+        this.onRefreshed("");
       }
 
+      this.isRefreshing = false;
       return data;
     } catch (error) {
       console.error("Error refreshing token:", error);
+      this.isRefreshing = false;
+      this.onRefreshed("");
       return {
         success: false,
         error: "Error al refrescar el token",

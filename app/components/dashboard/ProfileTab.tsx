@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTableNavigation } from "@/app/hooks/useTableNavigation";
 import { useAuth } from "@/app/context/AuthContext";
+import { authService } from "@/app/services/auth.service";
 import { User, Camera, Loader2, Phone, X, LogOut, LogIn } from "lucide-react";
 
 interface ProfileTabProps {
@@ -55,10 +56,9 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
       setGender(profile.gender || "");
       setPhotoUrl(profile.photoUrl || "");
     } else if (!isLoading && user) {
-      // Usuario autenticado pero sin perfil - intentar cargar de nuevo
       refreshProfile();
     }
-  }, [profile, isLoading, user]);
+  }, [profile, isLoading, user, refreshProfile]);
 
   const handleUpdateProfile = async () => {
     if (!isAuthenticated) return;
@@ -105,7 +105,7 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
     setIsUpdating(true);
 
     try {
-      const token = localStorage.getItem("xquisito_access_token");
+      let token = authService.getAccessToken();
       if (!token) {
         alert("No estás autenticado");
         return;
@@ -114,16 +114,30 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
       const formData = new FormData();
       formData.append("photo", file);
 
-      const response = await fetch(
+      let response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/profiles/upload-photo`,
         {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
           body: formData,
         },
       );
+
+      if (response.status === 401) {
+        const newToken = await authService.handleTokenRefresh();
+        if (newToken) {
+          const retryForm = new FormData();
+          retryForm.append("photo", file);
+          response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/profiles/upload-photo`,
+            {
+              method: "POST",
+              headers: { Authorization: `Bearer ${newToken}` },
+              body: retryForm,
+            },
+          );
+        }
+      }
 
       const data = await response.json();
 

@@ -6,8 +6,8 @@ import CardsTab from "./dashboard/CardsTab";
 import HistoryTab from "./dashboard/HistoryTab";
 import SupportTab from "./dashboard/SupportTab";
 import DashboardHeader from "./headers/DashboardHeader";
-import { useTableNavigation } from "../hooks/useTableNavigation";
 import { useAuth } from "../context/AuthContext";
+import { Loader2 } from "lucide-react";
 
 interface DashboardViewProps {
   onClose?: () => void;
@@ -29,78 +29,13 @@ export default function DashboardView({
   const [supportSessionId, setSupportSessionId] = useState<string | null>(null);
 
   const { profile, isLoading } = useAuth();
-  const { navigateWithTable } = useTableNavigation();
 
-  // Loading state
   if (isLoading) {
     return (
       <div
-        className={`flex flex-col overflow-y-auto ${onClose ? "h-full" : "h-dvh bg-gradient-to-br from-[#0a8b9b] to-[#153f43]"}`}
+        className={`flex items-center justify-center ${onClose ? "h-full" : "h-dvh bg-gradient-to-br from-[#0a8b9b] to-[#153f43]"}`}
       >
-        <div className="flex-1 flex flex-col overflow-y-auto items-center justify-center px-5 md:px-8 lg:px-10 pb-12 md:py-10 lg:py-12">
-          <div className="w-full max-w-md">
-            {/* Logo */}
-            <div className="mb-6 md:mb-8 lg:mb-10 text-center">
-              <img
-                src="/logo-short-green.webp"
-                alt="Xquisito Logo"
-                className="size-16 md:size-20 lg:size-24 mx-auto mb-4 md:mb-5 lg:mb-6"
-              />
-              <h1 className="text-white text-xl md:text-2xl lg:text-3xl font-medium mb-2 md:mb-3 lg:mb-4">
-                Acceso denegado
-              </h1>
-              <p className="text-white/80 text-sm md:text-base lg:text-lg">
-                Inicia sesión para acceder a tu perfil
-              </p>
-            </div>
-
-            {/* Options */}
-            <div className="space-y-3 md:space-y-4 lg:space-y-5">
-              {/* Sign In Option */}
-              <button
-                onClick={() => navigateWithTable("/sign-in")}
-                className="w-full bg-white hover:bg-gray-50 text-black py-4 md:py-5 lg:py-6 px-4 md:px-5 lg:px-6 rounded-xl md:rounded-2xl transition-all duration-200 flex items-center gap-3 md:gap-4 lg:gap-5 active:scale-95"
-              >
-                <div className="bg-gradient-to-r from-[#34808C] to-[#173E44] p-2 md:p-2.5 lg:p-3 rounded-full group-hover:scale-110 transition-transform">
-                  <svg
-                    className="size-5 md:size-6 lg:size-7 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                </div>
-                <div className="flex-1 text-left">
-                  <h2 className="text-base md:text-lg lg:text-xl font-medium mb-0.5 md:mb-1">
-                    Iniciar sesión
-                  </h2>
-                  <p className="text-xs md:text-sm lg:text-base text-gray-600">
-                    Accede a tu cuenta
-                  </p>
-                </div>
-              </button>
-            </div>
-
-            {/* Additional Info */}
-            <div className="mt-6 md:mt-7 lg:mt-8 text-center">
-              <p className="text-white/70 text-xs md:text-sm lg:text-base">
-                ¿No tienes cuenta?{" "}
-                <button
-                  onClick={() => navigateWithTable("/sign-up")}
-                  className="underline font-medium hover:text-white transition-colors"
-                >
-                  Regístrate aquí
-                </button>
-              </p>
-            </div>
-          </div>
-        </div>
+        <Loader2 className="size-12 animate-spin text-white" />
       </div>
     );
   }
