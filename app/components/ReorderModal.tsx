@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { X, Minus, Plus } from "lucide-react";
 import type { DishOrder } from "@/app/services/table.service";
 import { useCart, CartItem } from "@/app/context/CartContext";
@@ -43,6 +43,28 @@ function ReorderModal({
   const [showOrderAnimation, setShowOrderAnimation] = useState(false);
   const [orderedItems, setOrderedItems] = useState<CartItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Snapshot of cart item IDs that existed before the modal opened
+  const preModalCartIds = useRef<Set<number>>(new Set());
+  useEffect(() => {
+    if (isOpen) {
+      preModalCartIds.current = new Set(cartState.items.map((i) => i.id));
+    }
+  }, [isOpen]);
+
+  const handleClose = async () => {
+    const modalItemIds = new Set(
+      uniqueItems.map(({ order }) => order.menu_item_id),
+    );
+    const itemsToRemove = cartState.items.filter(
+      (item) =>
+        modalItemIds.has(item.id) && !preModalCartIds.current.has(item.id),
+    );
+    for (const item of itemsToRemove) {
+      await removeItem(item.id);
+    }
+    onClose();
+  };
 
   const uniqueItems = useMemo(() => {
     const seen = new Set<string>();
@@ -186,7 +208,7 @@ function ReorderModal({
     <>
       <div
         className="fixed inset-0 bg-black/25 backdrop-blur-xs z-[999] flex items-center justify-center"
-        onClick={onClose}
+        onClick={handleClose}
       >
         <div
           className="relative bg-[#173E44]/80 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] w-full mx-4 md:mx-12 lg:mx-28 rounded-4xl max-h-[85vh] flex flex-col"
@@ -196,7 +218,7 @@ function ReorderModal({
           <div className="flex-shrink-0">
             <div className="w-full flex justify-end">
               <button
-                onClick={onClose}
+                onClick={handleClose}
                 className="p-2 md:p-3 lg:p-4 hover:bg-white/10 rounded-lg md:rounded-xl transition-colors mt-3 md:mt-4 lg:mt-5 mr-3 md:mr-4 lg:mr-5"
               >
                 <X className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 text-white" />
