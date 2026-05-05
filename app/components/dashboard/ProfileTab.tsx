@@ -105,7 +105,7 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
     setIsUpdating(true);
 
     try {
-      let token = authService.getAccessToken();
+      const token = authService.getAccessToken();
       if (!token) {
         alert("No estás autenticado");
         return;
