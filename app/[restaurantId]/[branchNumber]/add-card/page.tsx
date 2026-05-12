@@ -122,6 +122,9 @@ function AddCardContent() {
           await refreshPaymentMethods();
         }
 
+        // Force refresh para garantizar sync con el servidor
+        await refreshPaymentMethods();
+
         // Check if we came from saved-cards page
         const fromSavedCards = document.referrer.includes("/saved-cards");
 

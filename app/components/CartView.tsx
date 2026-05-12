@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Minus, Plus } from "lucide-react";
 import { useCart, CartItem } from "@/app/context/CartContext";
 import { useTable } from "@/app/context/TableContext";
@@ -24,9 +24,19 @@ export default function CartView() {
   const { state: tableState, submitOrder } = useTable();
   const { navigateWithTable } = useTableNavigation();
   const restaurantData = getRestaurantData();
-  const { user, isAuthenticated, isLoading, profile } = useAuth();
+  const { user, isAuthenticated, isLoading, profile, refreshProfile } =
+    useAuth();
   const { branchNumber } = useRestaurant();
   const { guestName } = useGuest();
+
+  // Si el usuario está autenticado pero el perfil no cargó (ej. error de red al
+  // volver de fondo en móvil), intentar cargarlo para que el checkout funcione.
+  useEffect(() => {
+    if (!isLoading && user && !profile) {
+      refreshProfile();
+    }
+  }, [isLoading, user, profile, refreshProfile]);
+
   const [showOrderAnimation, setShowOrderAnimation] = useState(false);
   const [orderedItems, setOrderedItems] = useState<CartItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -182,9 +192,11 @@ export default function CartView() {
                           <div className="flex items-center gap-3 md:gap-4 lg:gap-5">
                             <div className="flex-shrink-0">
                               <div className="size-16 md:size-20 lg:size-24 bg-gray-300 rounded-sm md:rounded-md flex items-center justify-center hover:scale-105 transition-transform duration-200">
-                                {item.images[0] ? (
+                                {item.images && item.images.length > 0 ? (
                                   <img
-                                    src={item.images[0]}
+                                    src={
+                                      item.images[0] || "/logo-short-green.webp"
+                                    }
                                     alt="Dish preview"
                                     className="w-full h-full object-cover rounded-sm md:rounded-md"
                                   />

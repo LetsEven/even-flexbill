@@ -59,7 +59,7 @@ export default function DishDetailPage() {
   const dishId = parseInt(params.id as string);
   const restaurantId = params.restaurantId as string;
   const branchNumber = params.branchNumber as string;
-  const { state, addItem, removeItem, updateQuantity } = useCart();
+  const { state, addItem, updateQuantity } = useCart();
   const { tableNumber, navigateWithTable } = useTableNavigation();
   const { restaurant, menu, isOpen, setBranchNumber, setRestaurantId } =
     useRestaurant();
@@ -89,7 +89,6 @@ export default function DishDetailPage() {
   const [isLoadingReviews, setIsLoadingReviews] = useState(true);
   const { user, isLoading } = useAuth();
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [isValidating, setIsValidating] = useState(true);
 
   // Validar restaurante, sucursal y mesa
   useEffect(() => {
@@ -127,8 +126,6 @@ export default function DishDetailPage() {
       } catch (err) {
         console.error("❌ Validation error:", err);
         setValidationError("VALIDATION_ERROR");
-      } finally {
-        setIsValidating(false);
       }
     };
 
@@ -474,7 +471,7 @@ export default function DishDetailPage() {
 
     setLocalQuantity((prev) => prev + dishQuantity);
     setIsPulsing(true);
-    await addItem(item, dishQuantity);
+    await addItem(item, dishQuantity, item.specialInstructions);
     localStorage.setItem(`lastItem_${dishData.dish.id}`, JSON.stringify(item));
     return true;
   };
@@ -484,23 +481,9 @@ export default function DishDetailPage() {
     if (success) setTimeout(() => navigateWithTable("/menu"), 200);
   };
 
-  const handleRemoveFromCart = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!dishData) return;
-    setLocalQuantity((prev) => Math.max(0, prev - 1));
-    const cartItem = state.items.find((ci) => ci.id === dishData.dish.id);
-    if (cartItem && cartItem.quantity > 1) {
-      await updateQuantity(dishData.dish.id, cartItem.quantity - 1);
-    } else if (cartItem && cartItem.quantity === 1) {
-      await removeItem(dishData.dish.id);
-    }
-  };
-
   const currentQuantity = dishData
     ? state.items.find((ci) => ci.id === dishData.dish.id)?.quantity || 0
     : 0;
-
-  const displayQuantity = Math.max(localQuantity, currentQuantity);
 
   useEffect(() => {
     if (isPulsing) {
@@ -1256,7 +1239,7 @@ export default function DishDetailPage() {
           onClick={() => setIsReviewModalOpen(false)}
         >
           <div
-            className="bg-white w-full rounded-t-4xl overflow-y-auto z-999 max-h-[85vh] animate-slide-up"
+            className="bg-white w-full mx-4 md:mx-6 lg:mx-8 rounded-t-4xl overflow-y-auto z-999 max-h-[85vh] animate-slide-up"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="w-full flex justify-end">
