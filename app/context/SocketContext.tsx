@@ -86,17 +86,6 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
-        console.log(
-          "🔌 FlexBill Socket: Connecting to",
-          SOCKET_URL,
-          "with auth:",
-          {
-            clientType: authPayload.clientType,
-            hasGuestId: !!authPayload.guestId,
-            hasToken: !!authPayload.token,
-          },
-        );
-
         const newSocket = io(SOCKET_URL, {
           auth: authPayload,
           transports: ["websocket", "polling"],
@@ -107,7 +96,6 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         });
 
         newSocket.on("connect", () => {
-          console.log("✅ FlexBill Socket connected:", newSocket.id);
           setIsConnected(true);
 
           // Reconectar a la sala de mesa si estaba en una
@@ -123,27 +111,20 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         });
 
         newSocket.on("disconnect", (reason) => {
-          console.log("❌ FlexBill Socket disconnected:", reason);
           setIsConnected(false);
         });
 
         newSocket.on("table:joined", (data) => {
-          console.log("🍽️ Joined table room:", data);
           currentTableRoom.current = data.roomName;
         });
 
         newSocket.on("table:left", (data) => {
-          console.log("🚪 Left table room:", data);
           currentTableRoom.current = null;
         });
 
-        newSocket.on("table:user-joined", (data) => {
-          console.log("👤 User joined table:", data);
-        });
+        newSocket.on("table:user-joined", (data) => {});
 
-        newSocket.on("table:user-left", (data) => {
-          console.log("👤 User left table:", data);
-        });
+        newSocket.on("table:user-left", (data) => {});
 
         newSocket.on("table:error", (error) => {
           console.error("⚠️ Table socket error:", error);
@@ -174,7 +155,6 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const joinTable = useCallback(
     (tableNumber: string) => {
       if (socketRef.current && isConnected && restaurantId) {
-        console.log("🍽️ Joining table:", tableNumber);
         socketRef.current.emit("join:table", {
           restaurantId: restaurantId.toString(),
           branchNumber: branchNumber?.toString() || "main",
@@ -188,7 +168,6 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const leaveTable = useCallback(
     (tableNumber: string) => {
       if (socketRef.current && isConnected && restaurantId) {
-        console.log("🚪 Leaving table:", tableNumber);
         socketRef.current.emit("leave:table", {
           restaurantId: restaurantId.toString(),
           branchNumber: branchNumber?.toString() || "main",

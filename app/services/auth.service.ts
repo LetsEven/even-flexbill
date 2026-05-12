@@ -1,35 +1,4 @@
-import { apiService } from "../utils/api";
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-
-interface SendOTPResponse {
-  success: boolean;
-  message: string;
-  data: {
-    phone: string;
-    messageId?: string;
-  };
-  error?: string;
-}
-
-interface VerifyOTPResponse {
-  success: boolean;
-  message: string;
-  data: {
-    user: {
-      id: string;
-      phone: string;
-      accountType: string;
-    };
-    profile: any;
-    session: {
-      access_token: string;
-      refresh_token: string;
-      expires_at: number;
-    };
-  };
-  error?: string;
-}
 
 export interface AuthResponse {
   success: boolean;
@@ -82,9 +51,13 @@ class AuthService {
         return null;
       } else {
         await this.logout();
+        this.clearAuthToken();
+        this.clearAllSessionData();
+
         if (typeof window !== "undefined") {
           window.location.href = "/";
         }
+
         return null;
       }
     } catch (error) {
@@ -160,7 +133,7 @@ class AuthService {
   // Crear o actualizar perfil del usuario
   async createOrUpdateProfile(profileData: ProfileData): Promise<AuthResponse> {
     try {
-      const token = localStorage.getItem("xquisito_access_token");
+      const token = this.getAccessToken();
 
       if (!token) {
         return {
@@ -169,22 +142,29 @@ class AuthService {
         };
       }
 
-      // Use apiService which has automatic token refresh
-      const response = await apiService.request("/profiles", {
+      const response = await fetch(`${API_URL}/profiles`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(profileData),
       });
 
-      if (response.success) {
+      const data = await response.json();
+
+      if (response.ok) {
         return {
           success: true,
-          data: response.data,
+          data: data,
         };
       } else {
         return {
           success: false,
           error:
-            response.error?.message || "Error al crear/actualizar el perfil",
+            data.error?.message ||
+            data.message ||
+            "Error al crear/actualizar el perfil",
         };
       }
     } catch (error) {
@@ -199,7 +179,7 @@ class AuthService {
   // Obtener perfil del usuario autenticado
   async getMyProfile(): Promise<AuthResponse> {
     try {
-      const token = localStorage.getItem("xquisito_access_token");
+      const token = this.getAccessToken();
 
       if (!token) {
         return {
@@ -208,23 +188,50 @@ class AuthService {
         };
       }
 
-      // Use apiService which has automatic token refresh
-      const response = await apiService.request("/profiles/me", {
+      let response = await fetch(`${API_URL}/profiles/me`, {
         method: "GET",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
 
-      if (response.success) {
+      // Si recibimos 401, intentar refrescar el token
+      if (response.status === 401) {
+        const newToken = await this.handleTokenRefresh();
+
+        if (newToken) {
+          // Reintentar con el nuevo token
+          response = await fetch(`${API_URL}/profiles/me`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${newToken}`,
+            },
+          });
+        } else {
+          // handleTokenRefresh ya hizo logout si el servidor rechazó el token.
+          // Si fue error de red, devolvemos un error genérico para que el
+          // llamador no cierre la sesión innecesariamente.
+          return {
+            success: false,
+            error: "Error al renovar la sesión",
+          };
+        }
+      }
+
+      const data = await response.json();
+
+      if (response.ok) {
         return {
           success: true,
-          data: response.data,
+          data: data,
         };
       } else {
         return {
           success: false,
-          error: response.error?.message || "Error al obtener el perfil",
+          error:
+            data.error?.message || data.message || "Error al obtener el perfil",
         };
       }
     } catch (error) {
@@ -239,7 +246,7 @@ class AuthService {
   // Actualizar perfil del usuario autenticado
   async updateMyProfile(updates: Partial<ProfileData>): Promise<AuthResponse> {
     try {
-      const token = localStorage.getItem("xquisito_access_token");
+      const token = this.getAccessToken();
 
       if (!token) {
         return {
@@ -248,21 +255,29 @@ class AuthService {
         };
       }
 
-      // Use apiService which has automatic token refresh
-      const response = await apiService.request("/profiles/me", {
+      const response = await fetch(`${API_URL}/profiles/me`, {
         method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(updates),
       });
 
-      if (response.success) {
+      const data = await response.json();
+
+      if (response.ok) {
         return {
           success: true,
-          data: response.data,
+          data: data,
         };
       } else {
         return {
           success: false,
-          error: response.error?.message || "Error al actualizar el perfil",
+          error:
+            data.error?.message ||
+            data.message ||
+            "Error al actualizar el perfil",
         };
       }
     } catch (error) {
@@ -395,7 +410,7 @@ class AuthService {
       const user = JSON.parse(userStr);
       return {
         ...user,
-        token: accessToken, // Include token for ApiService
+        token: accessToken,
       };
     }
 
@@ -432,7 +447,6 @@ class AuthService {
       return false;
     }
 
-    // Check if token is expired
     const now = Math.floor(Date.now() / 1000);
     const expiration = parseInt(expiresAt);
 
@@ -444,6 +458,30 @@ class AuthService {
     localStorage.removeItem("xquisito_access_token");
     localStorage.removeItem("xquisito_refresh_token");
     localStorage.removeItem("xquisito_expires_at");
+  }
+
+  // Set authentication token (used by AuthContext)
+  setAuthToken(token: string): void {
+    localStorage.setItem("xquisito_access_token", token);
+  }
+
+  // Clear authentication token
+  clearAuthToken(): void {
+    localStorage.removeItem("xquisito_access_token");
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("was_authenticated");
+    }
+  }
+
+  // Clear all session data
+  clearAllSessionData(): void {
+    this.clearSession();
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("xquisito-guest-id");
+      localStorage.removeItem("xquisito-table-number");
+      localStorage.removeItem("xquisito-restaurant-id");
+      localStorage.removeItem("xquisito-guest-name");
+    }
   }
 }
 

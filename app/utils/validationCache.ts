@@ -27,7 +27,7 @@ function getCacheKey(
   restaurantId: number,
   branchNumber: number,
   tableNumber: number,
-  service?: string
+  service?: string,
 ): string {
   const base = `${CACHE_PREFIX}${restaurantId}_${branchNumber}_${tableNumber}`;
   return service ? `${base}_${service}` : base;
@@ -40,7 +40,7 @@ export function getValidationFromCache(
   restaurantId: number,
   branchNumber: number,
   tableNumber: number,
-  service?: string
+  service?: string,
 ): { valid: boolean; error?: string } | null {
   if (typeof window === "undefined") return null;
 
@@ -56,11 +56,9 @@ export function getValidationFromCache(
     // Verificar si el caché ha expirado
     if (now - data.timestamp > data.ttl) {
       sessionStorage.removeItem(key);
-      console.log("🔄 Cache expired for validation:", key);
       return null;
     }
 
-    console.log("✅ Cache hit for validation:", key);
     return {
       valid: data.valid,
       error: data.error,
@@ -80,7 +78,7 @@ export function setValidationCache(
   tableNumber: number,
   result: { valid: boolean; error?: string },
   service?: string,
-  ttlMs: number = DEFAULT_TTL_MS
+  ttlMs: number = DEFAULT_TTL_MS,
 ): void {
   if (typeof window === "undefined") return;
 
@@ -94,7 +92,6 @@ export function setValidationCache(
     };
 
     sessionStorage.setItem(key, JSON.stringify(data));
-    console.log("💾 Cached validation result:", key, result.valid ? "valid" : "invalid");
   } catch (error) {
     console.error("Error setting validation cache:", error);
   }
@@ -108,14 +105,13 @@ export function invalidateValidationCache(
   restaurantId: number,
   branchNumber: number,
   tableNumber: number,
-  service?: string
+  service?: string,
 ): void {
   if (typeof window === "undefined") return;
 
   try {
     const key = getCacheKey(restaurantId, branchNumber, tableNumber, service);
     sessionStorage.removeItem(key);
-    console.log("🗑️ Invalidated validation cache:", key);
   } catch (error) {
     console.error("Error invalidating validation cache:", error);
   }
@@ -139,7 +135,6 @@ export function clearAllValidationCache(): void {
     }
 
     keysToRemove.forEach((key) => sessionStorage.removeItem(key));
-    console.log("🧹 Cleared all validation cache:", keysToRemove.length, "entries");
   } catch (error) {
     console.error("Error clearing validation cache:", error);
   }

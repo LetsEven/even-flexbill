@@ -52,9 +52,6 @@ class ApiService {
         this.authToken = token;
         // Mark that user was authenticated
         sessionStorage.setItem("was_authenticated", "true");
-        console.log(
-          "🔑 ApiService - Auth token restored from localStorage on init",
-        );
       }
     }
   }
@@ -68,10 +65,6 @@ class ApiService {
       // Mark that user was authenticated to handle session expiry properly
       sessionStorage.setItem("was_authenticated", "true");
     }
-    console.log(
-      "🔑 ApiService - Auth token set:",
-      token ? token.substring(0, 20) + "..." : "undefined",
-    );
   }
 
   // Clear authentication token
@@ -82,7 +75,6 @@ class ApiService {
       localStorage.removeItem("xquisito_access_token");
       sessionStorage.removeItem("was_authenticated");
     }
-    console.log("🔑 ApiService - Auth token cleared");
   }
 
   private async makeRequest<T = any>(
@@ -106,31 +98,20 @@ class ApiService {
           this.authToken = storedToken;
           // Mark that user was authenticated
           sessionStorage.setItem("was_authenticated", "true");
-          console.log(
-            "🔄 makeRequest - Auth token lazy-loaded from localStorage",
-          );
         }
       }
 
       // Add authentication token for authenticated users
       const tokenToUse = authToken || this.authToken;
-      console.log("🔍 makeRequest - Token check:", {
-        endpoint,
-        hasTokenParam: !!authToken,
-        hasInstanceToken: !!this.authToken,
-        tokenToUse: tokenToUse ? tokenToUse.substring(0, 20) + "..." : "none",
-      });
 
       if (tokenToUse) {
         // For registered users, use auth token and skip guest headers
         headers["Authorization"] = `Bearer ${tokenToUse}`;
-        console.log("🔑 Adding Authorization header for authenticated user");
       } else {
         // For guests only, add guest identification headers
         const guestId = this.getGuestId();
         if (guestId) {
           headers["x-guest-id"] = guestId;
-          console.log("🔑 Adding x-guest-id header:", guestId);
         }
 
         // Add table number if available
@@ -139,12 +120,6 @@ class ApiService {
           headers["x-table-number"] = tableNumber;
         }
       }
-
-      console.log("🔍 makeRequest - Final headers:", {
-        Authorization: headers["Authorization"] ? "Bearer ***" : "missing",
-        "x-guest-id": headers["x-guest-id"] || "missing",
-        endpoint,
-      });
 
       const response = await fetch(url, {
         ...options,
@@ -159,8 +134,6 @@ class ApiService {
         !isRetry &&
         typeof window !== "undefined"
       ) {
-        console.log("🔄 Token expired (401), attempting to refresh...");
-
         const refreshToken = localStorage.getItem("xquisito_refresh_token");
         if (refreshToken) {
           try {
@@ -191,10 +164,6 @@ class ApiService {
               localStorage.setItem("xquisito_refresh_token", newRefreshToken);
               this.authToken = newAccessToken;
 
-              console.log(
-                "✅ Token refreshed successfully, retrying original request",
-              );
-
               // Retry the original request with the new token
               return this.makeRequest<T>(
                 endpoint,
@@ -203,7 +172,6 @@ class ApiService {
                 true,
               );
             } else {
-              console.log("❌ Token refresh failed, logging out user");
               this.handleAuthFailure();
             }
           } catch (refreshError) {
@@ -211,7 +179,6 @@ class ApiService {
             this.handleAuthFailure();
           }
         } else {
-          console.log("❌ No refresh token available, logging out user");
           this.handleAuthFailure();
         }
       }
@@ -250,7 +217,6 @@ class ApiService {
   private handleAuthFailure() {
     // Prevent multiple simultaneous auth failure handling
     if (this.isHandlingAuthFailure) {
-      console.log("⚠️ Auth failure already being handled, skipping...");
       return;
     }
 
@@ -273,11 +239,9 @@ class ApiService {
         sessionStorage.getItem("was_authenticated") === "true";
 
       if (wasAuthenticated) {
-        console.log("⚠️ Session expired. Reloading to re-authenticate...");
         sessionStorage.removeItem("was_authenticated");
         window.location.reload();
       } else {
-        console.log("⚠️ No authenticated session found, skipping reload");
         this.isHandlingAuthFailure = false;
       }
     }
@@ -760,15 +724,7 @@ export const apiService = new ApiService();
 // Debug logging - check token after hydration
 if (typeof window !== "undefined") {
   // Use setTimeout to ensure this runs after the constructor completes
-  setTimeout(() => {
-    console.log("🔧 ApiService instance created:", {
-      baseURL: apiService["baseURL"],
-      hasAuthToken: !!(apiService as any).authToken,
-      authTokenPreview: (apiService as any).authToken
-        ? (apiService as any).authToken.substring(0, 20) + "..."
-        : "none",
-    });
-  }, 0);
+  setTimeout(() => {}, 0);
 }
 
 // Utility functions for payment data validation

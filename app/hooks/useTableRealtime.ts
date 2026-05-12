@@ -108,27 +108,22 @@ export function useTableRealtime(options: UseTableRealtimeOptions) {
     if (!socket || !enabled) return;
 
     const handleDishCreated = (data: DishCreatedPayload) => {
-      console.log("📦 Received dish created:", data);
       onDishCreated?.(data.dish);
     };
 
     const handleDishStatus = (data: DishStatusPayload) => {
-      console.log("🔄 Received dish status change:", data);
       onDishStatusChanged?.(data.dishId, data.status);
     };
 
     const handleDishPaid = (data: DishPaidPayload) => {
-      console.log("💰 Received dish paid:", data);
       onDishPaid?.(data.dishId, data.paidBy);
     };
 
     const handleSummaryUpdate = (data: TableSummaryPayload) => {
-      console.log("📊 Received summary update:", data);
       onSummaryUpdate?.(data.summary);
     };
 
     const handleUserJoined = (data: UserJoinedPayload) => {
-      console.log("👤 Received user joined:", data);
       // Transformar el payload del servidor al formato ActiveUser
       const user: ActiveUser = {
         restaurant_id: 0, // Se actualizará con datos reales del contexto
@@ -146,18 +141,15 @@ export function useTableRealtime(options: UseTableRealtimeOptions) {
     };
 
     const handleUserLeft = (data: UserLeftPayload) => {
-      console.log("👋 Received user left:", data);
       const userId = data.userId || data.guestId || "";
       onUserLeft?.(userId);
     };
 
     const handleSplitUpdate = (data: SplitUpdatePayload) => {
-      console.log("💸 Received split update:", data);
       onSplitUpdate?.(data.splitPayments);
     };
 
     const handleFullRefresh = () => {
-      console.log("🔄 Received full refresh signal");
       onFullRefresh?.();
     };
 

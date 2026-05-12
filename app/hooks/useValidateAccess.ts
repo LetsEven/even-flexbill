@@ -61,7 +61,7 @@ export function useValidateAccess() {
           restId,
           branchNum,
           tableNum,
-          service
+          service,
         );
 
         if (cachedResult !== null) {
@@ -70,7 +70,6 @@ export function useValidateAccess() {
             console.error("❌ Validation failed (cached):", cachedResult.error);
             setValidationError(cachedResult.error || "VALIDATION_ERROR");
           } else {
-            console.log("✅ Validation successful (cached)");
             setValidationError(null);
           }
           setIsValidating(false);
@@ -83,7 +82,7 @@ export function useValidateAccess() {
             restId,
             branchNum,
             tableNum,
-            service
+            service,
           );
 
         // Solo cachear validaciones exitosas, no los errores
@@ -93,7 +92,7 @@ export function useValidateAccess() {
             branchNum,
             tableNum,
             { valid: true },
-            service
+            service,
           );
         }
 
@@ -101,7 +100,6 @@ export function useValidateAccess() {
           console.error("❌ Validation failed:", validation.error);
           setValidationError(validation.error || "VALIDATION_ERROR");
         } else {
-          console.log("✅ Validation successful");
           setValidationError(null);
         }
       } catch (err) {

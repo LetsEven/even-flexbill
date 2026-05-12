@@ -42,19 +42,12 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
   const refreshPaymentMethods = async () => {
     // For registered users - prioritize user over guest session
     if (isAuthenticated && user) {
-      console.log("🔐 Fetching payment methods for registered user:", user.id);
-
       // Get current user with token from authService
       const currentUser = authService.getCurrentUser();
       const userToken = currentUser?.token;
 
-      console.log("🔑 User token available:", !!userToken);
-
       // Wait for token to be available
       if (!userToken) {
-        console.log(
-          "⏳ Token not yet available, skipping payment methods request",
-        );
         setPaymentMethods([]);
         return;
       }
@@ -74,13 +67,8 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
             methods = response.data;
           }
           setPaymentMethods(methods);
-          console.log(
-            "💳 Loaded payment methods for registered user:",
-            methods.length,
-          );
         } else {
           setPaymentMethods([]);
-          console.log("💳 No payment methods found for registered user");
         }
       } catch (error) {
         console.error(
@@ -96,7 +84,6 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
 
     // For guests, ensure we have a guest ID
     if (isGuest && guestId) {
-      console.log("👥 Fetching payment methods for guest:", guestId);
       setIsLoading(true);
       try {
         const response = await apiService.getPaymentMethods();
@@ -110,10 +97,8 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
             methods = response.data;
           }
           setPaymentMethods(methods);
-          console.log("💳 Loaded payment methods for guest:", methods.length);
         } else {
           setPaymentMethods([]);
-          console.log("💳 No payment methods found for guest");
         }
       } catch (error) {
         console.error("❌ Error fetching payment methods for guest:", error);
@@ -125,7 +110,6 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
     }
 
     // No valid authentication context
-    console.log("⚠️ No valid authentication context for payment methods");
     setPaymentMethods([]);
   };
 
@@ -140,16 +124,9 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
   const setDefaultPaymentMethod = async (paymentMethodId: string) => {
     // Only registered users can set default payment methods
     if (!user) {
-      console.log(
-        "⚠️ setDefaultPaymentMethod: Only registered users can set default payment methods",
-      );
       throw new Error("Only registered users can set default payment methods");
     }
 
-    console.log(
-      "🔧 Setting default payment method for registered user:",
-      paymentMethodId,
-    );
     try {
       // Get Supabase auth token
       const currentUser = await authService.getCurrentUser();
@@ -167,10 +144,6 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
             isDefault: pm.id === paymentMethodId,
           })),
         );
-        console.log(
-          "✅ Default payment method set successfully:",
-          paymentMethodId,
-        );
       } else {
         throw new Error(
           response.error?.message || "Failed to set default payment method",
@@ -186,11 +159,6 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
     if (!user && !isGuest) {
       throw new Error("No active session");
     }
-
-    console.log(
-      `🗑️ Deleting payment method for ${isGuest ? "guest" : "registered user"}:`,
-      paymentMethodId,
-    );
 
     // Optimistic update: remove immediately, restore on failure
     const deletedMethod = paymentMethods.find(
@@ -214,7 +182,6 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
           response.error?.message || "Failed to delete payment method",
         );
       }
-      console.log("✅ Payment method deleted successfully:", paymentMethodId);
     } catch (error) {
       console.error("❌ Error deleting payment method:", error);
       if (deletedMethod) addPaymentMethod(deletedMethod);
@@ -226,14 +193,8 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
     const guestIdInStorage = localStorage.getItem("xquisito-guest-id");
 
     if (!user || !guestIdInStorage) {
-      console.log("⚠️ Cannot migrate: missing user or guest-id");
       return;
     }
-
-    console.log("🔄 Starting payment methods migration from guest to user", {
-      guestId: guestIdInStorage,
-      userId: user.id,
-    });
 
     try {
       // Get Supabase auth token
@@ -246,22 +207,13 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
         await paymentService.migrateGuestPaymentMethods(guestIdInStorage);
 
       if (response.success) {
-        console.log(
-          "✅ Payment methods migrated successfully:",
-          response.data?.migratedCount || 0,
-          "methods",
-        );
-
         // Refresh payment methods to show migrated ones
         await refreshPaymentMethods();
 
         // IMPORTANT: Only delete guest-id after ALL migrations complete
         // This includes: guest orders linking (done in GuestContext) + payment methods migration
-        console.log(
-          "🗑️ All migrations completed - removing guest ID from localStorage",
-        );
+
         localStorage.removeItem("xquisito-guest-id");
-        console.log("✅ Guest ID successfully removed");
       } else {
         console.error("❌ Payment methods migration failed:", response.error);
       }
@@ -276,17 +228,8 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
 
     // If user is authenticated, clear any guest session
     if (isAuthenticated && user && isGuest) {
-      console.log("🔐 User authenticated - clearing guest session");
       setAsAuthenticated(user.id);
     }
-
-    console.log("🔄 PaymentContext - Context changed:", {
-      isAuthenticated,
-      hasUser: !!user,
-      userId: user?.id,
-      isGuest,
-      guestId,
-    });
 
     refreshPaymentMethods();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -308,9 +251,15 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
         await migrateGuestPaymentMethods();
       }
     };
-    window.addEventListener("xquisito:guestOrdersLinked", handleGuestOrdersLinked);
+    window.addEventListener(
+      "xquisito:guestOrdersLinked",
+      handleGuestOrdersLinked,
+    );
     return () => {
-      window.removeEventListener("xquisito:guestOrdersLinked", handleGuestOrdersLinked);
+      window.removeEventListener(
+        "xquisito:guestOrdersLinked",
+        handleGuestOrdersLinked,
+      );
     };
   }, [user?.id]);
 

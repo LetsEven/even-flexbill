@@ -517,7 +517,6 @@ export function TableProvider({ children }: { children: ReactNode }) {
   // Callbacks para eventos de socket en tiempo real
   const handleDishCreated = useCallback(
     (dish: DishOrder) => {
-      console.log("🔄 handleDishCreated - Agregando platillo:", dish);
       dispatch({
         type: "SET_DISH_ORDERS",
         payload: [...state.dishOrders, dish],
@@ -528,14 +527,12 @@ export function TableProvider({ children }: { children: ReactNode }) {
 
   const handleDishStatusChanged = useCallback(
     (dishId: string, status: DishOrder["status"]) => {
-      console.log("🔄 handleDishStatusChanged:", dishId, status);
       dispatch({ type: "UPDATE_DISH_STATUS", payload: { dishId, status } });
     },
     [],
   );
 
   const handleDishPaid = useCallback((dishId: string) => {
-    console.log("🔄 handleDishPaid:", dishId);
     dispatch({
       type: "UPDATE_DISH_PAYMENT_STATUS",
       payload: { dishId, paymentStatus: "paid" },
@@ -543,13 +540,11 @@ export function TableProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const handleSummaryUpdate = useCallback(() => {
-    console.log("🔄 handleSummaryUpdate - Recargando summary");
     loadTableSummary();
   }, [loadTableSummary]);
 
   const handleUserJoined = useCallback(
     (user: ActiveUser) => {
-      console.log("🔄 handleUserJoined:", user);
       // Validar que user no sea undefined
       if (!user) {
         console.warn("⚠️ handleUserJoined received undefined user, ignoring");
@@ -565,7 +560,6 @@ export function TableProvider({ children }: { children: ReactNode }) {
 
   const handleUserLeft = useCallback(
     (userId: string) => {
-      console.log("🔄 handleUserLeft:", userId);
       const updatedUsers = state.activeUsers.filter(
         (u) => u && u.user_id !== userId && u.guest_name !== userId,
       );
@@ -575,12 +569,10 @@ export function TableProvider({ children }: { children: ReactNode }) {
   );
 
   const handleSplitUpdate = useCallback((splitPayments: SplitPayment[]) => {
-    console.log("🔄 handleSplitUpdate:", splitPayments);
     dispatch({ type: "SET_SPLIT_PAYMENTS", payload: splitPayments });
   }, []);
 
   const handleFullRefresh = useCallback(() => {
-    console.log("🔄 handleFullRefresh - Recargando todos los datos");
     loadTableData();
   }, [loadTableData]);
 
@@ -697,29 +689,14 @@ export function TableProvider({ children }: { children: ReactNode }) {
       branchNumberParam || branchNumber?.toString() || "1";
 
     if (!state.tableNumber || !finalUserName || itemsToOrder.length === 0) {
-      console.log("❌ submitOrder - Validación falló:", {
-        tableNumber: state.tableNumber,
-        userName: finalUserName,
-        itemsCount: itemsToOrder.length,
-        branchNumber: finalBranchNumber,
-      });
       return;
     }
-
-    console.log("✅ submitOrder - Iniciando orden:", {
-      tableNumber: state.tableNumber,
-      userName: finalUserName,
-      itemsCount: itemsToOrder.length,
-      items: itemsToOrder,
-      branchNumber: finalBranchNumber,
-    });
 
     dispatch({ type: "SET_LOADING", payload: true });
 
     try {
       // Esperar a que auth termine de cargar
       if (isLoading) {
-        console.log("⏳ Auth todavía cargando, esperando...");
         dispatch({ type: "SET_LOADING", payload: false });
         throw new Error("Por favor espera mientras verificamos tu sesión");
       }
@@ -736,7 +713,6 @@ export function TableProvider({ children }: { children: ReactNode }) {
 
       // Si está autenticado pero el perfil no ha cargado, esperar
       if (isAuthenticated && !profile?.firstName) {
-        console.log("⏳ Esperando a que cargue el perfil del usuario...");
         dispatch({ type: "SET_LOADING", payload: false });
         throw new Error("Por favor espera mientras cargamos tu perfil");
       }
@@ -756,7 +732,6 @@ export function TableProvider({ children }: { children: ReactNode }) {
 
       // Crear órdenes de platillos con la cantidad correcta
       for (const item of itemsToOrder) {
-        console.log("📤 Creando orden para item:", item.name);
         const response = await tableService.createDishOrder(
           restaurantId?.toString() || "1", // restaurantId del contexto
           finalBranchNumber, // branchNumber del contexto o parámetro
@@ -781,7 +756,6 @@ export function TableProvider({ children }: { children: ReactNode }) {
             response.error?.message || "Failed to create dish order",
           );
         }
-        console.log("✅ Orden creada exitosamente para:", item.name);
       }
 
       // Actualizar el nombre del usuario en el estado si se pasó como parámetro
@@ -797,8 +771,6 @@ export function TableProvider({ children }: { children: ReactNode }) {
 
       // Recalcular split bill automáticamente
       await recalculateSplitBill();
-
-      console.log("✅ submitOrder completado exitosamente");
     } catch (error) {
       console.error("❌ submitOrder - Error:", error);
       dispatch({

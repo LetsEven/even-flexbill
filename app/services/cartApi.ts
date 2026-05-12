@@ -92,15 +92,11 @@ class CartApiService {
       if (authToken) {
         // For authenticated users, use Bearer token
         headers["Authorization"] = `Bearer ${authToken}`;
-        console.log(
-          "🔑 CartAPI - Adding Authorization header for authenticated user",
-        );
       } else {
         // For guests, add guest identification headers
         const guestId = this.getGuestId();
         if (guestId) {
           headers["x-guest-id"] = guestId;
-          console.log("🔑 CartAPI - Adding x-guest-id header:", guestId);
         }
 
         // Add table number if available
