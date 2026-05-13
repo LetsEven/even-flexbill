@@ -316,18 +316,6 @@ class ApiService {
     return this.makeRequest("/payments/history");
   }
 
-  async createApplePayOrder(params: {
-    amount: number;
-    currency: string;
-    tableNumber?: string;
-    restaurantId?: string;
-  }): Promise<ApiResponse<{ orderId: string }>> {
-    return this.makeRequest("/payments/apple-pay/order", {
-      method: "POST",
-      body: JSON.stringify(params),
-    });
-  }
-
   // Payment Transaction Recording API
   async recordPaymentTransaction(transactionData: {
     payment_method_id: string | null;

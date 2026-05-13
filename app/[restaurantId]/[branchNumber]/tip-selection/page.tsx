@@ -23,10 +23,6 @@ export default function TipSelectionPage() {
   useEffect(() => {
     const tableFromUrl = searchParams?.get("table");
     if (tableFromUrl && !state.tableNumber) {
-      console.log(
-        "🔧 Tip selection: Setting table number from URL:",
-        tableFromUrl,
-      );
       dispatch({ type: "SET_TABLE_NUMBER", payload: tableFromUrl });
     }
   }, [searchParams, state.tableNumber, dispatch]);
@@ -96,22 +92,18 @@ export default function TipSelectionPage() {
           state.dishOrders.length === 0 ||
           !state.tableSummary
         ) {
-          console.log("🔄 Tip selection: Loading table data (missing data)");
           setIsLoading(true);
           await loadTableData();
           await loadSplitStatus();
           setIsLoading(false);
         } else {
           // Ya hay datos, solo cargar split status
-          console.log(
-            "✅ Tip selection: Data already loaded, loading split status only",
-          );
+
           await loadSplitStatus();
           setIsLoading(false);
         }
       } else if (!state.tableNumber && !isLoading) {
         // Si no hay número de mesa, mantenerse en loading
-        console.log("⚠️ Tip selection: Waiting for table number...");
       }
     };
     loadData();
@@ -120,9 +112,6 @@ export default function TipSelectionPage() {
   // Recargar split status cuando cambien los split payments en el contexto (tiempo real)
   useEffect(() => {
     if (state.tableNumber && state.splitPayments) {
-      console.log(
-        "🔄 Tip selection: Split payments changed, reloading split status...",
-      );
       loadSplitStatus();
     }
   }, [state.splitPayments]);

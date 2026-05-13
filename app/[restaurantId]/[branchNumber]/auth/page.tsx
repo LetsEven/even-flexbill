@@ -273,9 +273,6 @@ export default function AuthPage() {
             responseData.data ||
             responseData;
 
-          console.log("👤 profile object:", profile);
-          console.log("👤 profile.firstName:", profile.firstName);
-
           // If profile has firstName, redirect based on context
           if (profile.firstName) {
             await refreshProfile();

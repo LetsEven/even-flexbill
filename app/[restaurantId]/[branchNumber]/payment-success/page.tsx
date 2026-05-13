@@ -48,8 +48,19 @@ export default function PaymentSuccessPage() {
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
   const [isBreakdownModalOpen, setIsBreakdownModalOpen] = useState(false);
   const [hasRated, setHasRated] = useState(false); // Track if user has already rated
-  const [isRegisterModalOpen, setIsRegisterModalOpen] =
-    useState(!isAuthenticated);
+  const cameFromAuth =
+    typeof window !== "undefined" &&
+    sessionStorage.getItem("xquisito-post-auth-redirect");
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(
+    !isAuthenticated && !cameFromAuth,
+  );
+
+  // Limpiar el flag de redirect después de cargar
+  useEffect(() => {
+    if (cameFromAuth) {
+      sessionStorage.removeItem("xquisito-post-auth-redirect");
+    }
+  }, [cameFromAuth]);
 
   // Handler for sign up navigation
   const handleSignUp = () => {
@@ -60,6 +71,25 @@ export default function PaymentSuccessPage() {
     // Navigate to auth page
     navigateWithTable("/auth");
   };
+
+  useEffect(() => {
+    const prev = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      width: document.body.style.width,
+      height: document.body.style.height,
+    };
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.width = "100%";
+    document.body.style.height = "100%";
+    return () => {
+      document.body.style.overflow = prev.overflow;
+      document.body.style.position = prev.position;
+      document.body.style.width = prev.width;
+      document.body.style.height = prev.height;
+    };
+  }, []);
 
   // Bloquear scroll cuando los modales están abiertos
   useEffect(() => {
@@ -76,10 +106,6 @@ export default function PaymentSuccessPage() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      console.log(
-        "�� Payment success page - checking storage for payment data",
-      );
-
       // Get payment ID from URL to identify this specific payment
       const urlPaymentId = paymentId || searchParams.get("transactionId");
 
@@ -94,7 +120,6 @@ export default function PaymentSuccessPage() {
       if (currentKeyRef) {
         storedPayment = sessionStorage.getItem(currentKeyRef);
         storageKey = currentKeyRef;
-        console.log("📦 Found payment via current-payment-key:", currentKeyRef);
       }
 
       // If not found, search all sessionStorage keys for payment success data
@@ -104,7 +129,6 @@ export default function PaymentSuccessPage() {
           if (key && key.startsWith("xquisito-payment-success-")) {
             storedPayment = sessionStorage.getItem(key);
             storageKey = key;
-            console.log("📦 Found payment via sessionStorage search:", key);
             break;
           }
         }
@@ -131,13 +155,9 @@ export default function PaymentSuccessPage() {
         }
       }
 
-      console.log("📦 Found payment data in:", storageKey);
-      console.log("📦 Raw stored data:", storedPayment);
-
       if (storedPayment) {
         try {
           const parsed = JSON.parse(storedPayment);
-          console.log("📦 Parsed payment details:", parsed);
           setPaymentDetails(parsed);
 
           // If from localStorage (first time), save to sessionStorage for persistence
@@ -167,7 +187,6 @@ export default function PaymentSuccessPage() {
           console.error("Failed to parse stored payment details:", e);
         }
       } else {
-        console.log("📦 No payment data found in storage");
       }
     }
   }, [paymentId, searchParams]);
@@ -193,13 +212,10 @@ export default function PaymentSuccessPage() {
               guestId: guestId,
             }),
           });
-          console.log("🧹 Guest eCartPay data cleanup requested");
         } catch (error) {
           console.error("Failed to cleanup guest eCartPay data:", error);
         }
       }
-
-      console.log("🧹 Guest session cleared after successful payment");
     }
   };
 
@@ -262,7 +278,6 @@ export default function PaymentSuccessPage() {
   // Handle rating selection
   const handleRatingClick = (starRating: number) => {
     if (hasRated) {
-      console.log("⚠️ User has already rated");
       return;
     }
     setRating(starRating);
@@ -280,11 +295,6 @@ export default function PaymentSuccessPage() {
     }
 
     try {
-      console.log("🔍 Submitting restaurant review:", {
-        restaurant_id: parseInt(restaurantId),
-        rating: rating,
-      });
-
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/restaurants/restaurant-reviews`,
         {
@@ -302,7 +312,6 @@ export default function PaymentSuccessPage() {
       const data = await response.json();
 
       if (data.success) {
-        console.log("✅ Restaurant review submitted successfully");
         setHasRated(true);
       } else {
         console.error("❌ Failed to submit restaurant review:", data.message);
@@ -524,7 +533,11 @@ export default function PaymentSuccessPage() {
                         </div>
                       </div>
                       <span className="text-sm md:text-base lg:text-lg">
-                        *** {paymentDetails.cardLast4.slice(-3)}
+                        {paymentDetails.cardBrand === "apple"
+                          ? "Apple Pay"
+                          : paymentDetails.cardBrand === "google"
+                            ? "Google Pay"
+                            : `**** ${paymentDetails.cardLast4.slice(-4)}`}
                       </span>
                     </div>
                   )}

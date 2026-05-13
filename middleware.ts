@@ -14,12 +14,12 @@ export function middleware(request: NextRequest) {
 
   const cspHeader = `
     default-src 'self';
-    script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://ecartpay.com https://applepay.cdn-apple.com;
+    script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://ecartpay.com https://applepay.cdn-apple.com https://pay.google.com;
     style-src 'self' 'unsafe-inline';
-    img-src 'self' data: blob: ${backendUrl} https://*.supabase.co;
+    img-src 'self' data: blob: ${backendUrl} https://*.supabase.co https://www.gstatic.com;
     font-src 'self' https://applepay.cdn-apple.com;
-    connect-src 'self' ${backendUrl} ${wsProtocol}://${backendHost} https://*.ecartpay.com https://pay.ecart.com https://applepay.cdn-apple.com https://checkoutdev.ecartpay.com;
-    frame-src https://ecartpay.com https://pay.ecart.com https://applepay.cdn-apple.com https://*.apple.com;
+    connect-src 'self' ${backendUrl} ${wsProtocol}://${backendHost}${devUrls} https://*.ecartpay.com https://pay.ecart.com https://applepay.cdn-apple.com https://checkoutdev.ecartpay.com https://pay.google.com https://google.com https://www.google.com;
+    frame-src https://ecartpay.com https://pay.ecart.com https://applepay.cdn-apple.com https://*.apple.com https://pay.google.com;
     object-src 'none';
     base-uri 'self';
     form-action 'self';

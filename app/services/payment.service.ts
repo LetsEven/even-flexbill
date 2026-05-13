@@ -64,11 +64,16 @@ async function makeRequest(
   options: RequestInit = {},
 ): Promise<ApiResponse<any>> {
   const url = `${API_BASE_URL}${endpoint}`;
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem("xquisito_access_token")
+      : null;
 
   const response = await fetch(url, {
     ...options,
     headers: {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
   });
@@ -250,7 +255,23 @@ export const paymentService = {
     tableNumber?: string;
     restaurantId?: string;
   }): Promise<ApiResponse<{ orderId: string }>> {
-    return apiService.createApplePayOrder(params);
+    return makeRequest("/payments/apple-pay/order", {
+      method: "POST",
+      body: JSON.stringify(params),
+    });
+  },
+
+  // Crea una orden en Ecart Pay para Google Pay y regresa el orderId
+  async createGooglePayOrder(params: {
+    amount: number;
+    currency: string;
+    tableNumber?: string;
+    restaurantId?: string;
+  }): Promise<ApiResponse<{ orderId: string }>> {
+    return makeRequest("/payments/google-pay/order", {
+      method: "POST",
+      body: JSON.stringify(params),
+    });
   },
 
   // Migra los métodos de pago de guest a usuario autenticado

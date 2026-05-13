@@ -102,9 +102,7 @@ function AddCardContent() {
 
     try {
       if (user) {
-        console.log("💳 Adding card for registered user:", user.id);
       } else if (isGuestUser && guestId && tableNumber) {
-        console.log("💳 Adding card for guest:", guestId);
         apiService.setGuestInfo(guestId, tableNumber.toString());
       }
 

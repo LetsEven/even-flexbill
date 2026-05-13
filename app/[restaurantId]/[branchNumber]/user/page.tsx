@@ -79,7 +79,6 @@ export default function UserPage() {
   };
 
   const handleCancelOrder = () => {
-    console.log("❌ Order cancelled by user");
     setShowOrderAnimation(false);
     setOrderedItems([]);
     setOrderUserName("");
@@ -90,8 +89,6 @@ export default function UserPage() {
     // Esta función se ejecuta después de que expira el período de cancelación
     if (orderUserName && orderedItems.length > 0) {
       try {
-        console.log("🛍️ Submitting order for guest user:", orderUserName);
-
         // Enviar la orden a la API con branchNumber
         await submitOrder(
           orderUserName,

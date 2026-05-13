@@ -40,24 +40,32 @@ export function isRestaurantOpen(
   const now = new Date();
   const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
   const todayIndex = now.getDay();
-  const todayHours = openingHours[DAY_NAMES[todayIndex]];
+  const todayName = DAY_NAMES[todayIndex];
+  const todayHours = openingHours[todayName];
 
+  // Verificar horario de hoy
   if (todayHours && !todayHours.is_closed) {
     if (todayHours.is_all_day) return true;
+
     const openMin = toMinutes(todayHours.open_time);
     const closeMin = toMinutes(todayHours.close_time);
+
     if (closeMin > openMin) {
-      if (currentTimeInMinutes >= openMin && currentTimeInMinutes < closeMin)
+      // Horario normal mismo día (ej. 09:00 – 22:00)
+      if (currentTimeInMinutes >= openMin && currentTimeInMinutes < closeMin) {
         return true;
+      }
     } else {
-      // Overnight: cierra al día siguiente
+      // Horario nocturno: cierra al día siguiente (ej. 19:00 – 04:00)
+      // Abierto si ya pasó la hora de apertura de hoy
       if (currentTimeInMinutes >= openMin) return true;
     }
   }
 
-  // Verificar si ayer era nocturno y seguimos en su ventana de cierre
+  // Verificar si ayer tenía horario nocturno y seguimos en su ventana de cierre
   const yesterdayIndex = (todayIndex + 6) % 7;
   const yesterdayHours = openingHours[DAY_NAMES[yesterdayIndex]];
+
   if (
     yesterdayHours &&
     !yesterdayHours.is_closed &&
@@ -65,7 +73,11 @@ export function isRestaurantOpen(
   ) {
     const openMin = toMinutes(yesterdayHours.open_time);
     const closeMin = toMinutes(yesterdayHours.close_time);
-    if (closeMin < openMin && currentTimeInMinutes < closeMin) return true;
+
+    // Solo aplica si ayer era horario nocturno (close < open)
+    if (closeMin < openMin && currentTimeInMinutes < closeMin) {
+      return true;
+    }
   }
 
   return false;
@@ -81,20 +93,25 @@ export function getNextOpeningTime(
   const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
   const currentDayIndex = now.getDay();
 
+  // ¿Abre más tarde hoy?
   const todayHours = openingHours[DAY_NAMES[currentDayIndex]];
   if (todayHours && !todayHours.is_closed && !todayHours.is_all_day) {
     const openMin = toMinutes(todayHours.open_time);
-    if (currentTimeInMinutes < openMin)
+    if (currentTimeInMinutes < openMin) {
       return `Abre hoy a las ${todayHours.open_time}`;
+    }
   }
 
+  // Buscar en los próximos 7 días
   for (let i = 1; i <= 7; i++) {
     const nextDayIndex = (currentDayIndex + i) % 7;
     const nextDayHours = openingHours[DAY_NAMES[nextDayIndex]];
+
     if (nextDayHours && !nextDayHours.is_closed) {
-      const dayLabel =
-        i === 1 ? "mañana" : DAY_NAMES_SPANISH[nextDayIndex];
-      if (nextDayHours.is_all_day) return `Abre ${dayLabel} (todo el día)`;
+      const dayLabel = i === 1 ? "mañana" : DAY_NAMES_SPANISH[nextDayIndex];
+      if (nextDayHours.is_all_day) {
+        return `Abre ${dayLabel} (todo el día)`;
+      }
       return `Abre ${dayLabel} a las ${nextDayHours.open_time}`;
     }
   }

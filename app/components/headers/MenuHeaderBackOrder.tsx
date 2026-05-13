@@ -77,7 +77,6 @@ export default function MenuHeaderBackOrder({
           // Pero la estructura real tiene doble data, así que usamos response.data directamente
           const usersData = (response.data as any).data || response.data;
           setUsersImages(usersData as Record<string, UserImageData>);
-          console.log("✅ Imágenes cargadas:", usersData);
         }
       } catch (error) {
         console.error("❌ Error loading users images:", error);

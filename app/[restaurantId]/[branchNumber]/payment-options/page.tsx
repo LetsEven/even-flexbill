@@ -23,10 +23,6 @@ export default function PaymentOptionsPage() {
   useEffect(() => {
     const tableFromUrl = searchParams?.get("table");
     if (tableFromUrl && !state.tableNumber) {
-      console.log(
-        "🔧 Payment options: Setting table number from URL:",
-        tableFromUrl,
-      );
       dispatch({ type: "SET_TABLE_NUMBER", payload: tableFromUrl });
     }
   }, [searchParams, state.tableNumber, dispatch]);
@@ -38,27 +34,17 @@ export default function PaymentOptionsPage() {
   const loadSplitStatus = async () => {
     if (!state.tableNumber || !branchNumber) return;
 
-    console.log(
-      "🔄 Loading split status for table:",
-      state.tableNumber,
-      "branch:",
-      branchNumber,
-    );
-
     try {
       const response = await paymentService.getSplitPaymentStatus(
         restaurantId.toString(),
         branchNumber.toString(),
         state.tableNumber.toString(),
       );
-      console.log("📡 Split status API response:", response);
 
       if (response.success) {
         setSplitStatus(response.data.data);
-        console.log("✅ Split status updated:", response.data.data);
       } else {
         setSplitStatus(null);
-        console.log("❌ Split status API failed:", response);
       }
     } catch (error) {
       console.error("Error loading split status:", error);
@@ -83,7 +69,6 @@ export default function PaymentOptionsPage() {
           state.dishOrders.length === 0 ||
           !state.tableSummary
         ) {
-          console.log("🔄 Payment options: Loading table data (missing data)");
           setIsLoading(true);
           await loadTableData();
           await loadActiveUsers();
@@ -91,16 +76,13 @@ export default function PaymentOptionsPage() {
           setIsLoading(false);
         } else {
           // Ya hay datos, recargar activeUsers y split status (pueden haber cambiado por pagos)
-          console.log(
-            "✅ Payment options: Data already loaded, reloading active users and split status",
-          );
+
           await loadActiveUsers();
           await loadSplitStatus();
           setIsLoading(false);
         }
       } else if (!state.tableNumber && !isLoading) {
         // Si no hay número de mesa, mantenerse en loading
-        console.log("⚠️ Payment options: Waiting for table number...");
       }
     };
 
@@ -110,11 +92,6 @@ export default function PaymentOptionsPage() {
   // Recargar split status cuando cambien los split payments en el contexto
   useEffect(() => {
     if (state.tableNumber && state.splitPayments) {
-      console.log(
-        "🔔 Split payments changed in context, reloading split status...",
-      );
-      console.log("- Table number:", state.tableNumber);
-      console.log("- Split payments length:", state.splitPayments.length);
       loadSplitStatus();
     }
   }, [state.splitPayments]);
@@ -166,10 +143,6 @@ export default function PaymentOptionsPage() {
         .map((user) => user.guest_name)
         .filter(Boolean);
 
-      console.log("🔍 Using active_users with NO payments:");
-      console.log("- Active users:", state.activeUsers);
-      console.log("- Users with no payments:", usersWithNoPaid);
-
       return [...new Set(usersWithNoPaid)]; // Asegurar unicidad
     }
 
@@ -179,26 +152,13 @@ export default function PaymentOptionsPage() {
         name: payment.guest_name || payment.user_id,
         status: payment.status,
       }));
-      console.log("- All users with status:", allUsers);
 
       const pendingUsers = splitStatus.split_payments
         .filter((payment: any) => payment.status === "pending")
         .map((payment: any) => payment.guest_name || payment.user_id)
         .filter(Boolean);
 
-      console.log("🔍 Split status active:");
-      console.log("- Full splitStatus:", splitStatus);
-      console.log("- Split payments:", splitStatus.split_payments);
-      splitStatus.split_payments.forEach((payment: any, index: number) => {
-        console.log(`  Payment ${index + 1}:`, {
-          guest_name: payment.guest_name,
-          user_id: payment.user_id,
-          status: payment.status,
-          amount: payment.amount,
-          full_payment: payment,
-        });
-      });
-      console.log("- Pending users:", pendingUsers);
+      splitStatus.split_payments.forEach((payment: any, index: number) => {});
 
       return [...new Set(pendingUsers)]; // Asegurar unicidad
     }
@@ -207,10 +167,6 @@ export default function PaymentOptionsPage() {
     const usersFromDishes = Array.from(
       new Set(unpaidDishes.map((dish) => dish.guest_name).filter(Boolean)),
     );
-
-    console.log("🔍 No split status, using dishes:");
-    console.log("- Unpaid dishes:", unpaidDishes.length);
-    console.log("- Users from dishes:", usersFromDishes);
 
     return usersFromDishes;
   })();
@@ -243,15 +199,6 @@ export default function PaymentOptionsPage() {
 
     return usersWithUnpaidDishes;
   })();
-
-  console.log("👥 Final user counts:");
-  console.log("- uniqueUsers:", uniqueUsers, "length:", uniqueUsers.length);
-  console.log(
-    "- usersForSplitOption:",
-    usersForSplitOption,
-    "length:",
-    usersForSplitOption.length,
-  );
 
   // Platillos del usuario actual
   const currentUserDishes = dishOrders.filter(

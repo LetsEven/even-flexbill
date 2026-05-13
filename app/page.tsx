@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import Loader from "./components/UI/Loader";
 
 // Restaurant ID y Branch por defecto para testing
-const DEFAULT_RESTAURANT_ID = 5;
+const DEFAULT_RESTAURANT_ID = 15;
 const DEFAULT_BRANCH_NUMBER = 1;
 const DEFAULT_TABLE = 1;
 
@@ -23,23 +23,13 @@ function HomeContent() {
     const restaurantId = restaurantParam || DEFAULT_RESTAURANT_ID;
     const branchNumber = branchParam || DEFAULT_BRANCH_NUMBER;
 
-    console.log("🏠 HomePage redirect:", {
-      tableParam,
-      restaurantParam,
-      branchParam,
-      restaurantId,
-      branchNumber,
-    });
-
     if (tableParam) {
       // Redirect to menu with table parameter
       const redirectUrl = `/${restaurantId}/${branchNumber}/menu?table=${tableParam}`;
-      console.log("✅ Redirecting to:", redirectUrl);
       router.replace(redirectUrl);
     } else {
       // Default redirect to restaurant menu with default table
       const redirectUrl = `/${DEFAULT_RESTAURANT_ID}/${DEFAULT_BRANCH_NUMBER}/menu?table=${DEFAULT_TABLE}`;
-      console.log("✅ Default redirecting to:", redirectUrl);
       router.replace(redirectUrl);
     }
   }, [router, searchParams]);

@@ -108,44 +108,17 @@ export default function OrderStatus() {
 
   // Cargar datos cuando se monta el componente o cambia el número de mesa
   useEffect(() => {
-    console.log("🔍 OrderStatus useEffect - tableNumber:", state.tableNumber);
-    console.log("🔍 OrderStatus useEffect - dishOrders:", state.dishOrders);
-    console.log("🔍 OrderStatus useEffect - tableSummary:", state.tableSummary);
-
     if (state.tableNumber && !hasLoadedInitialData) {
-      console.log("📡 Loading table data...");
       setHasLoadedInitialData(true);
 
       // Call API directly to debug
       loadTableData()
-        .then(() => {
-          console.log("✅ loadTableData completed");
-          console.log("📊 Final state after load:", {
-            dishOrders: state.dishOrders,
-            tableSummary: state.tableSummary,
-            error: state.error,
-          });
-        })
+        .then(() => {})
         .catch((error) => {
           console.error("❌ loadTableData failed:", error);
         });
     }
   }, [state.tableNumber]); // Removed loadTableData from dependencies
-
-  // Debug: Log state changes only when data actually changes
-  useEffect(() => {
-    if (state.dishOrders?.length > 0 || state.tableSummary || state.error) {
-      console.log("🔄 State updated:", {
-        tableNumber: state.tableNumber,
-        dishOrdersCount: state.dishOrders?.length || 0,
-        tableSummary: state.tableSummary,
-        isLoading: state.isLoading,
-        error: state.error,
-        unpaidDishesCount: unpaidDishes.length,
-        paidDishesCount: paidDishes.length,
-      });
-    }
-  }, [state.dishOrders?.length, state.tableSummary, state.error]); // Only log meaningful changes
 
   return (
     <div className="min-h-dvh bg-gradient-to-br from-[#0a8b9b] to-[#153f43] flex flex-col">
