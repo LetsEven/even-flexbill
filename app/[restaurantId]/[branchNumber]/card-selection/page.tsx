@@ -553,7 +553,6 @@ export default function CardSelectionPage() {
           currency: "MXN",
           countryCode: "MX",
           supportedNetworks: ["visa", "masterCard", "amex"],
-          merchantCapabilities: ["supports3DS"],
           buttonStyle: "black",
           buttonType: "pay",
           borderRadius: "8px",
