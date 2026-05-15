@@ -89,7 +89,7 @@ const helveticaNeue = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Xquisito Flex Bill",
+  title: "Even Flex Bill",
   description: "Tu menú digital con un toque de NFC",
   manifest: "/manifest.json",
   icons: {

@@ -305,7 +305,7 @@ export default function DishDetailPage() {
       const userId = isAuthenticated ? user.id : null;
       const guestId =
         !isAuthenticated && typeof window !== "undefined"
-          ? localStorage.getItem("xquisito-guest-id")
+          ? localStorage.getItem("even-guest-id")
           : null;
 
       const response = await reviewsApi.getMyReview(dishId, userId, guestId);
@@ -500,7 +500,7 @@ export default function DishDetailPage() {
       const userId = isAuthenticated ? user.id : null;
       const guestId =
         !isAuthenticated && typeof window !== "undefined"
-          ? localStorage.getItem("xquisito-guest-id")
+          ? localStorage.getItem("even-guest-id")
           : null;
 
       const response = myReview
@@ -554,7 +554,7 @@ export default function DishDetailPage() {
             <div className="mb-6 md:mb-8 lg:mb-10 text-center">
               <img
                 src="/logo-short-green.webp"
-                alt="Xquisito Logo"
+                alt="Even Logo"
                 className="size-16 md:size-20 lg:size-24 mx-auto mb-4 md:mb-5 lg:mb-6"
               />
               <div className="bg-red-500/20 p-3 md:p-4 lg:p-5 rounded-full w-fit mx-auto mb-4 md:mb-5 lg:mb-6">
@@ -604,7 +604,7 @@ export default function DishDetailPage() {
             <div className="mb-6 md:mb-8 lg:mb-10 text-center">
               <img
                 src="/logo-short-green.webp"
-                alt="Xquisito Logo"
+                alt="Even Logo"
                 className="size-16 md:size-20 lg:size-24 mx-auto mb-4 md:mb-5 lg:mb-6"
               />
               <div className="bg-amber-500/20 p-3 md:p-4 lg:p-5 rounded-full w-fit mx-auto mb-4 md:mb-5 lg:mb-6">
@@ -654,7 +654,7 @@ export default function DishDetailPage() {
             <div className="mb-6 md:mb-8 lg:mb-10 text-center">
               <img
                 src="/logo-short-green.webp"
-                alt="Xquisito Logo"
+                alt="Even Logo"
                 className="size-16 md:size-20 lg:size-24 mx-auto mb-4 md:mb-5 lg:mb-6"
               />
               <h1 className="text-white text-xl md:text-2xl lg:text-3xl font-medium mb-2 md:mb-3 lg:mb-4">

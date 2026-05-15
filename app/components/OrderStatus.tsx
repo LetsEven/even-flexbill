@@ -403,7 +403,7 @@ export default function OrderStatus() {
                                             dish.images?.[0] ??
                                             "/logo-short-green.webp"
                                           }
-                                          alt="Logo Xquisito"
+                                          alt="Logo Even"
                                           className="w-full h-full object-cover rounded-sm md:rounded-md"
                                         />
                                       </div>

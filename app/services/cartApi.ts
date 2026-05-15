@@ -137,7 +137,7 @@ class CartApiService {
     if (typeof window === "undefined") return "";
 
     // Solo leer del localStorage - NO generar nuevo ID
-    return localStorage.getItem("xquisito-guest-id") || "";
+    return localStorage.getItem("even-guest-id") || "";
   }
 
   /**
@@ -145,7 +145,7 @@ class CartApiService {
    */
   private getAuthToken(): string | null {
     if (typeof window === "undefined") return null;
-    return localStorage.getItem("xquisito_access_token");
+    return localStorage.getItem("even_access_token");
   }
 
   /**
@@ -153,7 +153,7 @@ class CartApiService {
    */
   private getTableNumber(): string | null {
     if (typeof window === "undefined") return null;
-    return localStorage.getItem("xquisito-table-number");
+    return localStorage.getItem("even-table-number");
   }
 
   /**

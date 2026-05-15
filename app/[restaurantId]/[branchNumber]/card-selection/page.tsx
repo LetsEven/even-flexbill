@@ -70,17 +70,15 @@ export default function CardSelectionPage() {
   const baseAmount = parseFloat(searchParams.get("baseAmount") || "0"); // Monto base (consumo)
   const tipAmount = parseFloat(searchParams.get("tipAmount") || "0"); // Propina
   const ivaTip = parseFloat(searchParams.get("ivaTip") || "0"); // IVA propina (no pagado por cliente)
-  const xquisitoCommissionClient = parseFloat(
-    searchParams.get("xquisitoCommissionClient") || "0",
+  const evenCommissionClient = parseFloat(
+    searchParams.get("evenCommissionClient") || "0",
   );
-  const ivaXquisitoClient = parseFloat(
-    searchParams.get("ivaXquisitoClient") || "0",
+  const ivaEvenClient = parseFloat(searchParams.get("ivaEvenClient") || "0");
+  const evenCommissionRestaurant = parseFloat(
+    searchParams.get("evenCommissionRestaurant") || "0",
   );
-  const xquisitoCommissionRestaurant = parseFloat(
-    searchParams.get("xquisitoCommissionRestaurant") || "0",
-  );
-  const xquisitoCommissionTotal = parseFloat(
-    searchParams.get("xquisitoCommissionTotal") || "0",
+  const evenCommissionTotal = parseFloat(
+    searchParams.get("evenCommissionTotal") || "0",
   );
   const ecartCommissionTotal = parseFloat(
     searchParams.get("ecartCommissionTotal") || "0",
@@ -89,22 +87,21 @@ export default function CardSelectionPage() {
   const selectedItemsParam = searchParams.get("selectedItems");
 
   // Calcular valores faltantes
-  const xquisitoClientCharge = xquisitoCommissionClient + ivaXquisitoClient;
+  const evenClientCharge = evenCommissionClient + ivaEvenClient;
 
-  // IVA sobre la comisión del restaurante (16% de xquisitoCommissionRestaurant)
-  const ivaXquisitoRestaurant = xquisitoCommissionRestaurant * 0.16;
+  // IVA sobre la comisión del restaurante (16% de evenCommissionRestaurant)
+  const ivaEvenRestaurant = evenCommissionRestaurant * 0.16;
 
   // Cargo total al restaurante (comisión + IVA)
-  const xquisitoRestaurantCharge =
-    xquisitoCommissionRestaurant + ivaXquisitoRestaurant;
+  const evenRestaurantCharge = evenCommissionRestaurant + ivaEvenRestaurant;
 
   // Subtotal para comisión es el consumo base + propina
   const subtotalForCommission = baseAmount + tipAmount;
 
-  // Tasa aplicada (% total de comisión Xquisito sobre el subtotal)
-  const xquisitoRateApplied =
+  // Tasa aplicada (% total de comisión Even sobre el subtotal)
+  const evenRateApplied =
     subtotalForCommission > 0
-      ? (xquisitoCommissionTotal / subtotalForCommission) * 100
+      ? (evenCommissionTotal / subtotalForCommission) * 100
       : 0;
 
   useEcartPay();
@@ -387,15 +384,14 @@ export default function CardSelectionPage() {
             base_amount: baseAmount,
             tip_amount: tipAmount,
             iva_tip: ivaTip,
-            xquisito_commission_total: xquisitoCommissionTotal,
-            xquisito_commission_client: xquisitoCommissionClient,
-            xquisito_commission_restaurant: xquisitoCommissionRestaurant,
-            iva_xquisito_client: ivaXquisitoClient,
-            iva_xquisito_restaurant: ivaXquisitoRestaurant,
-            xquisito_client_charge:
-              xquisitoCommissionClient + ivaXquisitoClient,
-            xquisito_restaurant_charge: xquisitoRestaurantCharge,
-            xquisito_rate_applied: xquisitoRateApplied,
+            even_commission_total: evenCommissionTotal,
+            even_commission_client: evenCommissionClient,
+            even_commission_restaurant: evenCommissionRestaurant,
+            iva_even_client: ivaEvenClient,
+            iva_even_restaurant: ivaEvenRestaurant,
+            even_client_charge: evenCommissionClient + ivaEvenClient,
+            even_restaurant_charge: evenRestaurantCharge,
+            even_rate_applied: evenRateApplied,
             total_amount_charged: totalAmountCharged,
             subtotal_for_commission: subtotalForCommission,
             currency: "MXN",
@@ -428,11 +424,11 @@ export default function CardSelectionPage() {
           baseAmount,
           tipAmount,
           ivaTip,
-          xquisitoCommissionClient,
-          ivaXquisitoClient,
-          xquisitoCommissionRestaurant,
-          xquisitoRestaurantCharge,
-          xquisitoCommissionTotal,
+          evenCommissionClient,
+          ivaEvenClient,
+          evenCommissionRestaurant,
+          evenRestaurantCharge,
+          evenCommissionTotal,
           totalAmountCharged,
           dishCount:
             paymentType === "user-items"
@@ -448,7 +444,7 @@ export default function CardSelectionPage() {
         };
 
         localStorage.setItem(
-          "xquisito-completed-payment",
+          "even-completed-payment",
           JSON.stringify(successData),
         );
       }
@@ -699,11 +695,11 @@ export default function CardSelectionPage() {
           baseAmount: baseAmount.toString(), // Monto base (consumo)
           tipAmount: tipAmount.toString(),
           ivaTip: ivaTip.toString(),
-          xquisitoCommissionClient: xquisitoCommissionClient.toString(),
-          ivaXquisitoClient: ivaXquisitoClient.toString(),
-          xquisitoCommissionRestaurant: xquisitoCommissionRestaurant.toString(),
-          xquisitoRestaurantCharge: xquisitoRestaurantCharge.toString(),
-          xquisitoCommissionTotal: xquisitoCommissionTotal.toString(),
+          evenCommissionClient: evenCommissionClient.toString(),
+          ivaEvenClient: ivaEvenClient.toString(),
+          evenCommissionRestaurant: evenCommissionRestaurant.toString(),
+          evenRestaurantCharge: evenRestaurantCharge.toString(),
+          evenCommissionTotal: evenCommissionTotal.toString(),
           type: paymentType,
           ...(userName && { userName }),
         });
@@ -735,7 +731,7 @@ export default function CardSelectionPage() {
         paymentMethodId: paymentMethodToUse.id,
         amount: totalAmountCharged,
         currency: "MXN",
-        description: `Xquisito Restaurant Payment - Table ${tableNumber || state.tableNumber || "N/A"}${userName ? ` - ${userName}` : ""} - Tip: $${tipAmount.toFixed(2)} - Commission: $${(xquisitoCommissionClient + ivaXquisitoClient).toFixed(2)}`,
+        description: `Even Restaurant Payment - Table ${tableNumber || state.tableNumber || "N/A"}${userName ? ` - ${userName}` : ""} - Tip: $${tipAmount.toFixed(2)} - Commission: $${(evenCommissionClient + ivaEvenClient).toFixed(2)}`,
         orderId: `order-${Date.now()}-attempt-${paymentAttempts + 1}`,
         tableNumber: tableNumber || state.tableNumber,
         restaurantId: restaurantId,
@@ -786,11 +782,11 @@ export default function CardSelectionPage() {
             baseAmount,
             tipAmount,
             ivaTip,
-            xquisitoCommissionClient,
-            ivaXquisitoClient,
-            xquisitoCommissionRestaurant,
-            xquisitoRestaurantCharge,
-            xquisitoCommissionTotal,
+            evenCommissionClient,
+            ivaEvenClient,
+            evenCommissionRestaurant,
+            evenRestaurantCharge,
+            evenCommissionTotal,
             totalAmountCharged, // Total cobrado al cliente
             selectedItems: paymentType === "select-items" ? selectedItems : [], // Store selected items for filtering
             // Payment method details
@@ -799,7 +795,7 @@ export default function CardSelectionPage() {
           };
 
           localStorage.setItem(
-            "xquisito-pending-payment",
+            "even-pending-payment",
             JSON.stringify(paymentData),
           );
         }
@@ -836,11 +832,11 @@ export default function CardSelectionPage() {
       baseAmount: baseAmount.toString(), // Monto base (consumo)
       tipAmount: tipAmount.toString(),
       ivaTip: ivaTip.toString(),
-      xquisitoCommissionClient: xquisitoCommissionClient.toString(),
-      ivaXquisitoClient: ivaXquisitoClient.toString(),
-      xquisitoCommissionRestaurant: xquisitoCommissionRestaurant.toString(),
-      xquisitoRestaurantCharge: xquisitoRestaurantCharge.toString(),
-      xquisitoCommissionTotal: xquisitoCommissionTotal.toString(),
+      evenCommissionClient: evenCommissionClient.toString(),
+      ivaEvenClient: ivaEvenClient.toString(),
+      evenCommissionRestaurant: evenCommissionRestaurant.toString(),
+      evenRestaurantCharge: evenRestaurantCharge.toString(),
+      evenCommissionTotal: evenCommissionTotal.toString(),
       type: paymentType,
       scan: "false", // Auto-abrir scanner
       ...(userName && { userName }),
@@ -1343,17 +1339,13 @@ export default function CardSelectionPage() {
                       </span>
                     </div>
                   )}
-                  {xquisitoCommissionClient + ivaXquisitoClient > 0 && (
+                  {evenCommissionClient + ivaEvenClient > 0 && (
                     <div className="flex justify-between items-center">
                       <span className="text-black font-medium">
                         + Comisión de servicio
                       </span>
                       <span className="text-black font-medium">
-                        $
-                        {(xquisitoCommissionClient + ivaXquisitoClient).toFixed(
-                          2,
-                        )}{" "}
-                        MXN
+                        ${(evenCommissionClient + ivaEvenClient).toFixed(2)} MXN
                       </span>
                     </div>
                   )}

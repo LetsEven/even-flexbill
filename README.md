@@ -1,4 +1,4 @@
-# 🍽️ Xquisito Restaurant - Frontend
+# 🍽️ Even Restaurant - Frontend
 
 Un sistema de gestión de restaurante moderno y responsive construido con **Next.js 15**, **TypeScript** y **TailwindCSS**. Permite a los clientes ordenar desde la mesa mediante códigos QR y gestionar pagos de forma integrada.
 
@@ -20,6 +20,7 @@ Un sistema de gestión de restaurante moderno y responsive construido con **Next
 ## 🚀 Características
 
 ### ✨ Funcionalidades Principales
+
 - **🔍 NFC**: Los clientes acercan su dispositivo con el NFC activo a la tarjeta de la mesa
 - **📖 Menú Digital**: Navegación intuitiva por categorías y platillos
 - **🛒 Carrito Inteligente**: Gestión de items por usuario en tiempo real
@@ -30,6 +31,7 @@ Un sistema de gestión de restaurante moderno y responsive construido con **Next
 - **📱 PWA Ready**: Instalable como aplicación móvil
 
 ### 🔐 Características Técnicas
+
 - **TypeScript**: Tipado estático para mayor robustez
 - **Server Components**: Renderizado optimizado del lado del servidor
 - **Estado Global**: Gestión centralizada con Context API
@@ -39,20 +41,20 @@ Un sistema de gestión de restaurante moderno y responsive construido con **Next
 
 ## 🛠️ Tecnologías
 
-| Tecnología | Versión | Propósito |
-|------------|---------|-----------|
-| **Next.js** | 15.5.0 | Framework principal React |
-| **React** | 19.1.0 | Biblioteca UI |
-| **TypeScript** | ^5 | Tipado estático |
-| **TailwindCSS** | ^4 | Estilos y diseño |
-| **Clerk** | ^6.31.10 | Autenticación (opcional) |
-| **Lucide React** | ^0.544.0 | Iconografía |
-| **Next PWA** | ^5.6.0 | Funcionalidad PWA |
+| Tecnología       | Versión  | Propósito                 |
+| ---------------- | -------- | ------------------------- |
+| **Next.js**      | 15.5.0   | Framework principal React |
+| **React**        | 19.1.0   | Biblioteca UI             |
+| **TypeScript**   | ^5       | Tipado estático           |
+| **TailwindCSS**  | ^4       | Estilos y diseño          |
+| **Clerk**        | ^6.31.10 | Autenticación (opcional)  |
+| **Lucide React** | ^0.544.0 | Iconografía               |
+| **Next PWA**     | ^5.6.0   | Funcionalidad PWA         |
 
 ## 📁 Estructura del Proyecto
 
 ```
-xquisito-fronted/
+even-flexbill/
 ├── app/                          # App Router de Next.js 15
 │   ├── (pages)/                  # Páginas principales
 │   │   ├── add-card/            # Agregar método de pago
@@ -120,6 +122,7 @@ xquisito-fronted/
 ## 🔧 Instalación
 
 ### Prerrequisitos
+
 - **Node.js** >= 18.0.0
 - **npm** o **yarn**
 - **Backend API** corriendo en puerto 5000
@@ -127,12 +130,14 @@ xquisito-fronted/
 ### Pasos de Instalación
 
 1. **Clonar el repositorio**
+
    ```bash
    git clone <repository-url>
-   cd xquisito-fronted
+   cd even-flexbill
    ```
 
 2. **Instalar dependencias**
+
    ```bash
    npm install
    # o
@@ -140,13 +145,14 @@ xquisito-fronted/
    ```
 
 3. **Configurar variables de entorno**
+
    ```bash
    # Crear archivo .env.local
    NEXT_PUBLIC_API_URL=http://localhost:5000/api
-   NEXT_PUBLIC_RESTAURANT_NAME=Xquisito
    ```
 
 4. **Ejecutar en desarrollo**
+
    ```bash
    npm run dev
    # o
@@ -163,30 +169,36 @@ xquisito-fronted/
 ### 🏠 Páginas Principales
 
 #### **Página de Inicio (`/`)**
+
 - Pantalla de bienvenida
 - Entrada mediante escaneo QR o selección manual de mesa
 
 #### **Menú (`/menu`)**
+
 - Navegación por categorías
 - Lista de platillos con imágenes y descripciones
 - Agregado directo al carrito
 
 #### **Carrito (`/cart`)**
+
 - Resumen de items seleccionados
 - Edición de cantidades
 - Cálculo de totales
 
 #### **Checkout (`/checkout`)**
+
 - Selección de usuarios que pagan
 - División de cuenta
 - Iniciar proceso de pago
 
 #### **Agregar Propina (`/add-tip`)**
+
 - Selección de porcentaje de propina
 - Monto personalizado
 - Cálculo automático del total
 
 #### **Estado de Órdenes (`/order`)**
+
 - Visualización de órdenes activas
 - Estado en tiempo real (En cocina, En camino, Entregado)
 - Total de la mesa
@@ -194,24 +206,21 @@ xquisito-fronted/
 ### 🧩 Componentes Clave
 
 #### **MenuHeader**
+
 ```tsx
 // Componente de header principal
-<MenuHeader
-  restaurant={restaurantData}
-  tableNumber={tableNumber}
-/>
+<MenuHeader restaurant={restaurantData} tableNumber={tableNumber} />
 ```
 
 #### **MenuItem**
+
 ```tsx
 // Item individual del menú
-<MenuItem
-  item={menuItem}
-  onAddToCart={handleAddToCart}
-/>
+<MenuItem item={menuItem} onAddToCart={handleAddToCart} />
 ```
 
 #### **OrderStatus**
+
 ```tsx
 // Estado de órdenes con filtrado automático
 <OrderStatus />
@@ -220,6 +229,7 @@ xquisito-fronted/
 ## 🔄 Contextos de Estado
 
 ### 🍽️ TableContext
+
 **Ubicación**: `app/context/TableContext.tsx`
 
 Gestiona el estado global de la mesa, órdenes y usuarios.
@@ -239,22 +249,26 @@ interface TableState {
 ```
 
 **Funciones principales**:
+
 - `submitOrder()`: Enviar orden al servidor
 - `refreshOrders()`: Actualizar órdenes de la mesa
 - `markOrdersAsPaid()`: Marcar órdenes como pagadas
 - `loadTableOrders()`: Cargar órdenes activas
 
 ### 🛒 CartContext
+
 **Ubicación**: `app/context/CartContext.tsx`
 
 Manejo del carrito individual del usuario.
 
 ### 👥 GuestContext
+
 **Ubicación**: `app/context/GuestContext.tsx`
 
 Gestión de usuarios invitados y sesiones temporales.
 
 ### 💳 PaymentContext
+
 **Ubicación**: `app/context/PaymentContext.tsx`
 
 Estado y configuración de pagos.
@@ -262,6 +276,7 @@ Estado y configuración de pagos.
 ## 🧩 Hooks Personalizados
 
 ### 🔄 useTableNavigation
+
 **Ubicación**: `app/hooks/useTableNavigation.ts`
 
 Navegación manteniendo el contexto de la mesa.
@@ -270,10 +285,11 @@ Navegación manteniendo el contexto de la mesa.
 const { navigateWithTable, goBack } = useTableNavigation();
 
 // Navegar manteniendo el número de mesa
-navigateWithTable('/checkout');
+navigateWithTable("/checkout");
 ```
 
 ### 💳 useEcartPay
+
 **Ubicación**: `app/hooks/useEcartPay.ts`
 
 Integración con el sistema de pagos EcartPay.
@@ -283,6 +299,7 @@ const { processPayment, isLoading } = useEcartPay();
 ```
 
 ### 👤 useUserSync
+
 **Ubicación**: `app/hooks/useUserSync.js`
 
 Sincronización de usuarios en tiempo real.
@@ -290,6 +307,7 @@ Sincronización de usuarios en tiempo real.
 ## 📡 Servicios y APIs
 
 ### 🍽️ Table API Service
+
 **Ubicación**: `app/services/tableApi.ts`
 
 Cliente principal para la comunicación con el backend.
@@ -297,20 +315,27 @@ Cliente principal para la comunicación con el backend.
 ```tsx
 class TableApiService {
   // Obtener órdenes de la mesa (solo pendientes)
-  async getTableOrders(tableNumber: number): Promise<ApiResponse<UserOrder[]>>
+  async getTableOrders(tableNumber: number): Promise<ApiResponse<UserOrder[]>>;
 
   // Crear nueva orden
-  async createUserOrder(tableNumber: number, orderData: OrderData): Promise<ApiResponse<UserOrder>>
+  async createUserOrder(
+    tableNumber: number,
+    orderData: OrderData,
+  ): Promise<ApiResponse<UserOrder>>;
 
   // Marcar órdenes como pagadas
-  async markOrdersAsPaid(tableNumber: number, orderIds?: string[]): Promise<ApiResponse<PaymentResult>>
+  async markOrdersAsPaid(
+    tableNumber: number,
+    orderIds?: string[],
+  ): Promise<ApiResponse<PaymentResult>>;
 
   // Obtener estadísticas de la mesa
-  async getTableStats(tableNumber: number): Promise<ApiResponse<TableStats>>
+  async getTableStats(tableNumber: number): Promise<ApiResponse<TableStats>>;
 }
 ```
 
 ### 🔧 API Utils
+
 **Ubicación**: `app/utils/api.ts`
 
 Cliente API general con manejo de autenticación y errores.
@@ -348,12 +373,12 @@ Cliente API general con manejo de autenticación y errores.
 
 ### 🔄 Estados de Pago
 
-| Estado | Descripción |
-|--------|-------------|
-| `pending` | Orden creada, pago pendiente |
-| `paid` | Pago completado exitosamente |
-| `refunded` | Pago reembolsado |
-| `cancelled` | Pago cancelado |
+| Estado      | Descripción                  |
+| ----------- | ---------------------------- |
+| `pending`   | Orden creada, pago pendiente |
+| `paid`      | Pago completado exitosamente |
+| `refunded`  | Pago reembolsado             |
+| `cancelled` | Pago cancelado               |
 
 ### 🎯 Integración Automática
 
@@ -366,7 +391,7 @@ El sistema marca automáticamente las órdenes como pagadas cuando:
 ```tsx
 // En handlePay de add-tip/page.tsx
 if (paymentResult.success) {
-  await handlePaymentSuccess(paymentId, totalAmount, 'direct');
+  await handlePaymentSuccess(paymentId, totalAmount, "direct");
 }
 
 // En payment-success/page.tsx
@@ -396,11 +421,11 @@ const handlePaymentSuccess = async () => {
 
 ### 🔄 Estados de Órdenes
 
-| Estado | Descripción | Color |
-|--------|-------------|--------|
-| `On Kitchen` | En preparación | 🟠 Naranja |
-| `On its Way` | En camino a la mesa | 🔵 Azul |
-| `Delivered` | Entregado | 🟢 Verde |
+| Estado       | Descripción         | Color      |
+| ------------ | ------------------- | ---------- |
+| `On Kitchen` | En preparación      | 🟠 Naranja |
+| `On its Way` | En camino a la mesa | 🔵 Azul    |
+| `Delivered`  | Entregado           | 🟢 Verde   |
 
 ### 📈 Funcionalidades
 
@@ -414,10 +439,10 @@ const handlePaymentSuccess = async () => {
 ```json
 {
   "scripts": {
-    "dev": "next dev --turbopack",      // Desarrollo con Turbopack
-    "build": "next build --turbopack",   // Build optimizado
-    "start": "next start",               // Servidor de producción
-    "lint": "eslint"                     // Linting de código
+    "dev": "next dev --turbopack", // Desarrollo con Turbopack
+    "build": "next build --turbopack", // Build optimizado
+    "start": "next start", // Servidor de producción
+    "lint": "eslint" // Linting de código
   }
 }
 ```
@@ -447,7 +472,6 @@ npm run lint
 NEXT_PUBLIC_API_URL=http://localhost:5000/api
 
 # Configuración del restaurante
-NEXT_PUBLIC_RESTAURANT_NAME=Xquisito
 NEXT_PUBLIC_RESTAURANT_LOGO=/logo.png
 
 # EcartPay (opcional)
@@ -457,6 +481,7 @@ NEXT_PUBLIC_ECARTPAY_API_KEY=your_api_key
 ### 📱 PWA Configuration
 
 El proyecto está configurado como PWA (Progressive Web App) con:
+
 - **Service Worker** automático
 - **Instalación** en dispositivos móviles
 - **Funcionamiento offline** básico
@@ -480,4 +505,4 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ---
 
-**Desarrollado con ❤️ para Xquisito Restaurant**
+**Desarrollado con ❤️ para Even**

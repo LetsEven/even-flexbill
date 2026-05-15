@@ -77,17 +77,17 @@ async function makeRequest<T = any>(
 
     // Get auth token from localStorage
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("xquisito_access_token");
+      const token = localStorage.getItem("even_access_token");
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       } else {
         // For guests, add guest identification headers
-        const guestId = localStorage.getItem("xquisito-guest-id");
+        const guestId = localStorage.getItem("even-guest-id");
         if (guestId) {
           headers["x-guest-id"] = guestId;
         }
 
-        const tableNumber = localStorage.getItem("xquisito-table-number");
+        const tableNumber = localStorage.getItem("even-table-number");
         if (tableNumber) {
           headers["x-table-number"] = tableNumber;
         }

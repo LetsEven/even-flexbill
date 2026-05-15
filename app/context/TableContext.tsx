@@ -708,7 +708,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
       // Solo usar guestId si NO está autenticado
       const guestId =
         !isAuthenticated && typeof window !== "undefined"
-          ? localStorage.getItem("xquisito-guest-id")
+          ? localStorage.getItem("even-guest-id")
           : null;
 
       // Si está autenticado pero el perfil no ha cargado, esperar
@@ -727,7 +727,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
 
       // Guardar nombre para vinculación posterior (solo si no está autenticado)
       if (!isAuthenticated && typeof window !== "undefined") {
-        localStorage.setItem("xquisito-guest-name", finalUserName);
+        localStorage.setItem("even-guest-name", finalUserName);
       }
 
       // Crear órdenes de platillos con la cantidad correcta

@@ -44,12 +44,12 @@ export default function DashboardHeader({
           </div>
         </div>
 
-        {/* Xquisito Logo */}
+        {/* Even Logo */}
         <div
           onClick={handleLogoClick}
           className="absolute left-1/2 transform -translate-x-1/2 size-10 md:size-12 lg:size-14 active:scale-95 transition-transform duration-200"
         >
-          <img src="/logo-short-green.webp" alt="Xquisito Logo" />
+          <img src="/logo-short-green.webp" alt="Even Logo" />
         </div>
       </div>
     </header>

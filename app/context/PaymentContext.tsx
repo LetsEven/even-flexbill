@@ -190,7 +190,7 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
   };
 
   const migrateGuestPaymentMethods = async () => {
-    const guestIdInStorage = localStorage.getItem("xquisito-guest-id");
+    const guestIdInStorage = localStorage.getItem("even-guest-id");
 
     if (!user || !guestIdInStorage) {
       return;
@@ -213,7 +213,7 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
         // IMPORTANT: Only delete guest-id after ALL migrations complete
         // This includes: guest orders linking (done in GuestContext) + payment methods migration
 
-        localStorage.removeItem("xquisito-guest-id");
+        localStorage.removeItem("even-guest-id");
       } else {
         console.error("❌ Payment methods migration failed:", response.error);
       }
@@ -246,18 +246,15 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
   useEffect(() => {
     if (!user) return;
     const handleGuestOrdersLinked = async () => {
-      const guestIdInStorage = localStorage.getItem("xquisito-guest-id");
+      const guestIdInStorage = localStorage.getItem("even-guest-id");
       if (guestIdInStorage) {
         await migrateGuestPaymentMethods();
       }
     };
-    window.addEventListener(
-      "xquisito:guestOrdersLinked",
-      handleGuestOrdersLinked,
-    );
+    window.addEventListener("even:guestOrdersLinked", handleGuestOrdersLinked);
     return () => {
       window.removeEventListener(
-        "xquisito:guestOrdersLinked",
+        "even:guestOrdersLinked",
         handleGuestOrdersLinked,
       );
     };

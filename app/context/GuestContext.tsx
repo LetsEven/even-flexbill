@@ -49,9 +49,9 @@ function GuestProviderInternal({ children }: GuestProviderProps) {
     }
 
     const tableParam = searchParams?.get("table");
-    const storedGuestId = localStorage.getItem("xquisito-guest-id");
-    const storedTableNumber = localStorage.getItem("xquisito-table-number");
-    const storedRestaurantId = localStorage.getItem("xquisito-restaurant-id");
+    const storedGuestId = localStorage.getItem("even-guest-id");
+    const storedTableNumber = localStorage.getItem("even-table-number");
+    const storedRestaurantId = localStorage.getItem("even-restaurant-id");
 
     if (user) {
       // PRIORITY 1: User is authenticated
@@ -80,7 +80,7 @@ function GuestProviderInternal({ children }: GuestProviderProps) {
           .then((response) => {
             if (response.success) {
               setHasLinkedOrders(true);
-              window.dispatchEvent(new CustomEvent("xquisito:guestOrdersLinked"));
+              window.dispatchEvent(new CustomEvent("even:guestOrdersLinked"));
             } else {
               console.error("❌ Failed to link guest orders:", response.error);
             }
@@ -97,7 +97,7 @@ function GuestProviderInternal({ children }: GuestProviderProps) {
 
       // Step 3: Set table context for authenticated user
       if (tableParam) {
-        localStorage.setItem("xquisito-table-number", tableParam);
+        localStorage.setItem("even-table-number", tableParam);
         apiService.setTableNumber(tableParam);
         setTableNumber(tableParam);
       }
@@ -116,11 +116,11 @@ function GuestProviderInternal({ children }: GuestProviderProps) {
       const guestIdToUse = storedGuestId || generateGuestId();
 
       // Store to localStorage FIRST to ensure persistence
-      localStorage.setItem("xquisito-table-number", tableParam);
-      localStorage.setItem("xquisito-guest-id", guestIdToUse);
+      localStorage.setItem("even-table-number", tableParam);
+      localStorage.setItem("even-guest-id", guestIdToUse);
 
       // Restore guest name from localStorage if available
-      const storedGuestName = localStorage.getItem("xquisito-guest-name");
+      const storedGuestName = localStorage.getItem("even-guest-name");
 
       setIsGuest(true);
       setGuestId(guestIdToUse);
@@ -132,7 +132,7 @@ function GuestProviderInternal({ children }: GuestProviderProps) {
 
     // Priority 2b: Restore existing guest session (only if no table param)
     if (storedGuestId && storedTableNumber) {
-      const storedGuestName = localStorage.getItem("xquisito-guest-name");
+      const storedGuestName = localStorage.getItem("even-guest-name");
       setIsGuest(true);
       setGuestId(storedGuestId);
       setTableNumber(storedTableNumber);
@@ -148,13 +148,13 @@ function GuestProviderInternal({ children }: GuestProviderProps) {
     const generatedGuestId = generateGuestId();
 
     // Ensure localStorage is updated immediately
-    localStorage.setItem("xquisito-guest-id", generatedGuestId);
+    localStorage.setItem("even-guest-id", generatedGuestId);
 
     setIsGuest(true);
     setGuestId(generatedGuestId);
 
     if (newTableNumber) {
-      localStorage.setItem("xquisito-table-number", newTableNumber);
+      localStorage.setItem("even-table-number", newTableNumber);
       apiService.setTableNumber(newTableNumber);
       setTableNumber(newTableNumber);
     }
@@ -176,12 +176,12 @@ function GuestProviderInternal({ children }: GuestProviderProps) {
     // It's needed for payment methods migration which happens after cart migration
     // The guest-id will be removed by PaymentContext after all migrations complete
 
-    localStorage.removeItem("xquisito-guest-name");
+    localStorage.removeItem("even-guest-name");
 
     // Only clear table context if user is not authenticated
     if (!user) {
-      localStorage.removeItem("xquisito-table-number");
-      localStorage.removeItem("xquisito-restaurant-id");
+      localStorage.removeItem("even-table-number");
+      localStorage.removeItem("even-restaurant-id");
       setTableNumber(null);
     }
 
@@ -193,17 +193,17 @@ function GuestProviderInternal({ children }: GuestProviderProps) {
 
   const setGuestNameHandler = (name: string) => {
     setGuestName(name);
-    localStorage.setItem("xquisito-guest-name", name);
+    localStorage.setItem("even-guest-name", name);
   };
 
   // Helper function to generate guest ID
   const generateGuestId = (): string => {
     if (typeof window !== "undefined") {
-      let guestId = localStorage.getItem("xquisito-guest-id");
+      let guestId = localStorage.getItem("even-guest-id");
 
       if (!guestId) {
         guestId = `guest-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        localStorage.setItem("xquisito-guest-id", guestId);
+        localStorage.setItem("even-guest-id", guestId);
       }
 
       return guestId;

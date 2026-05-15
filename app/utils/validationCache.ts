@@ -10,7 +10,7 @@
  * - Clave única por combinación restaurante/sucursal/mesa/servicio
  */
 
-const CACHE_PREFIX = "xquisito_validation_";
+const CACHE_PREFIX = "even_validation_";
 const DEFAULT_TTL_MS = 5 * 60 * 1000; // 5 minutos
 
 interface CachedValidation {

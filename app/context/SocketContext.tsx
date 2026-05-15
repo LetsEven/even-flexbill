@@ -76,7 +76,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           authPayload.guestName = guestName || "Invitado";
         } else if (user) {
           // Usuario autenticado - obtener token de Supabase
-          const token = localStorage.getItem("xquisito-auth-token");
+          const token = localStorage.getItem("even-auth-token");
           if (token) {
             authPayload.token = token;
           } else {

@@ -1,6 +1,6 @@
 {
-  "name": "Xquisito",
-  "short_name": "Xquisito",
+  "name": "Even",
+  "short_name": "Even",
   "description": "Tu menú digital con un toque de NFC",
   "start_url": "/",
   "display": "standalone",

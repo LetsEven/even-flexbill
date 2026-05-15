@@ -1,4 +1,4 @@
-// API configuration and helper functions for Xquisito frontend
+// API configuration and helper functions for Even frontend
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
@@ -47,7 +47,7 @@ class ApiService {
   // Restore auth token from localStorage
   private restoreAuthToken() {
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("xquisito_access_token");
+      const token = localStorage.getItem("even_access_token");
       if (token) {
         this.authToken = token;
         // Mark that user was authenticated
@@ -61,7 +61,7 @@ class ApiService {
     this.authToken = token;
     // Persist token to localStorage to ensure it's available across page loads
     if (typeof window !== "undefined") {
-      localStorage.setItem("xquisito_access_token", token);
+      localStorage.setItem("even_access_token", token);
       // Mark that user was authenticated to handle session expiry properly
       sessionStorage.setItem("was_authenticated", "true");
     }
@@ -72,7 +72,7 @@ class ApiService {
     this.authToken = undefined;
     // Remove token from localStorage
     if (typeof window !== "undefined") {
-      localStorage.removeItem("xquisito_access_token");
+      localStorage.removeItem("even_access_token");
       sessionStorage.removeItem("was_authenticated");
     }
   }
@@ -93,7 +93,7 @@ class ApiService {
 
       // Ensure auth token is loaded from localStorage if not already set
       if (!this.authToken && typeof window !== "undefined") {
-        const storedToken = localStorage.getItem("xquisito_access_token");
+        const storedToken = localStorage.getItem("even_access_token");
         if (storedToken) {
           this.authToken = storedToken;
           // Mark that user was authenticated
@@ -134,7 +134,7 @@ class ApiService {
         !isRetry &&
         typeof window !== "undefined"
       ) {
-        const refreshToken = localStorage.getItem("xquisito_refresh_token");
+        const refreshToken = localStorage.getItem("even_refresh_token");
         if (refreshToken) {
           try {
             // Attempt to refresh the token
@@ -160,8 +160,8 @@ class ApiService {
               const newAccessToken = refreshData.data.session.access_token;
               const newRefreshToken = refreshData.data.session.refresh_token;
 
-              localStorage.setItem("xquisito_access_token", newAccessToken);
-              localStorage.setItem("xquisito_refresh_token", newRefreshToken);
+              localStorage.setItem("even_access_token", newAccessToken);
+              localStorage.setItem("even_refresh_token", newRefreshToken);
               this.authToken = newAccessToken;
 
               // Retry the original request with the new token
@@ -224,10 +224,10 @@ class ApiService {
       this.isHandlingAuthFailure = true;
 
       // Clear all auth data
-      localStorage.removeItem("xquisito_access_token");
-      localStorage.removeItem("xquisito_refresh_token");
-      localStorage.removeItem("xquisito_user");
-      localStorage.removeItem("xquisito_expires_at");
+      localStorage.removeItem("even_access_token");
+      localStorage.removeItem("even_refresh_token");
+      localStorage.removeItem("even_user");
+      localStorage.removeItem("even_expires_at");
       this.authToken = undefined;
 
       // Dispatch a custom event to notify AuthContext
@@ -325,14 +325,14 @@ class ApiService {
     base_amount: number;
     tip_amount: number;
     iva_tip: number;
-    xquisito_commission_total: number;
-    xquisito_commission_client: number;
-    xquisito_commission_restaurant: number;
-    iva_xquisito_client: number;
-    iva_xquisito_restaurant: number;
-    xquisito_client_charge: number;
-    xquisito_restaurant_charge: number;
-    xquisito_rate_applied: number;
+    even_commission_total: number;
+    even_commission_client: number;
+    even_commission_restaurant: number;
+    iva_even_client: number;
+    iva_even_restaurant: number;
+    even_client_charge: number;
+    even_restaurant_charge: number;
+    even_rate_applied: number;
     total_amount_charged: number;
     subtotal_for_commission: number;
     currency?: string;
@@ -349,7 +349,7 @@ class ApiService {
     // Only get existing guest ID from localStorage - DO NOT generate a new one
     // Guest ID generation is handled exclusively by GuestContext after auth loads
     if (typeof window !== "undefined") {
-      return localStorage.getItem("xquisito-guest-id");
+      return localStorage.getItem("even-guest-id");
     }
     return null;
   }
@@ -357,7 +357,7 @@ class ApiService {
   private getTableNumber(): string | null {
     // Get table number from localStorage or context
     if (typeof window !== "undefined") {
-      return localStorage.getItem("xquisito-table-number");
+      return localStorage.getItem("even-table-number");
     }
     return null;
   }
@@ -365,7 +365,7 @@ class ApiService {
   private getRestaurantId(): string | null {
     // Get restaurant ID from localStorage
     if (typeof window !== "undefined") {
-      return localStorage.getItem("xquisito-restaurant-id");
+      return localStorage.getItem("even-restaurant-id");
     }
     return null;
   }
@@ -378,13 +378,13 @@ class ApiService {
   ): void {
     if (typeof window !== "undefined") {
       if (guestId) {
-        localStorage.setItem("xquisito-guest-id", guestId);
+        localStorage.setItem("even-guest-id", guestId);
       }
       if (tableNumber) {
-        localStorage.setItem("xquisito-table-number", tableNumber);
+        localStorage.setItem("even-table-number", tableNumber);
       }
       if (restaurantId) {
-        localStorage.setItem("xquisito-restaurant-id", restaurantId);
+        localStorage.setItem("even-restaurant-id", restaurantId);
       }
     }
   }
@@ -392,14 +392,14 @@ class ApiService {
   // Method to set table number (call this when user scans QR or selects table)
   setTableNumber(tableNumber: string): void {
     if (typeof window !== "undefined") {
-      localStorage.setItem("xquisito-table-number", tableNumber);
+      localStorage.setItem("even-table-number", tableNumber);
     }
   }
 
   // Method to set restaurant ID
   setRestaurantId(restaurantId: string): void {
     if (typeof window !== "undefined") {
-      localStorage.setItem("xquisito-restaurant-id", restaurantId);
+      localStorage.setItem("even-restaurant-id", restaurantId);
     }
   }
 
@@ -411,7 +411,7 @@ class ApiService {
   // Method to clear guest session (guest-specific data only)
   clearGuestSession(): void {
     if (typeof window !== "undefined") {
-      localStorage.removeItem("xquisito-guest-id");
+      localStorage.removeItem("even-guest-id");
       // Note: Table number and restaurant ID are preserved for authenticated users
       // They are only cleared when user explicitly logs out
     }
@@ -420,10 +420,10 @@ class ApiService {
   // Method to clear all session data (for logout)
   clearAllSessionData(): void {
     if (typeof window !== "undefined") {
-      localStorage.removeItem("xquisito-guest-id");
-      localStorage.removeItem("xquisito-table-number");
-      localStorage.removeItem("xquisito-restaurant-id");
-      localStorage.removeItem("xquisito-guest-name");
+      localStorage.removeItem("even-guest-id");
+      localStorage.removeItem("even-table-number");
+      localStorage.removeItem("even-restaurant-id");
+      localStorage.removeItem("even-guest-name");
     }
   }
 

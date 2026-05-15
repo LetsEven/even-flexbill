@@ -194,7 +194,7 @@ function MenuItem({ item, onRestaurantClosed }: MenuItemProps) {
             ) : (
               <img
                 src="/logo-short-green.webp"
-                alt="Logo Xquisito"
+                alt="Logo Even"
                 loading="lazy"
                 className="size-18 md:size-20 lg:size-22 object-contain"
               />

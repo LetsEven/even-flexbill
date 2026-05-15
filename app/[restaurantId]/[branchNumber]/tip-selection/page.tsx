@@ -238,12 +238,12 @@ export default function TipSelectionPage() {
   // Extraer valores calculados
   const {
     ivaTip,
-    xquisitoCommissionTotal,
-    xquisitoCommissionClient,
-    xquisitoCommissionRestaurant,
-    ivaXquisitoClient,
-    xquisitoClientCharge,
-    xquisitoRestaurantCharge,
+    evenCommissionTotal,
+    evenCommissionClient,
+    evenCommissionRestaurant,
+    ivaEvenClient,
+    evenClientCharge,
+    evenRestaurantCharge,
     totalAmountCharged: paymentAmount,
     rates, // Tasas aplicadas según el rango
   } = commissions;
@@ -278,11 +278,11 @@ export default function TipSelectionPage() {
       baseAmount: baseAmount.toString(), // Monto base (consumo)
       tipAmount: tipAmount.toString(), // Propina
       ivaTip: ivaTip.toString(), // IVA de propina (no pagado por cliente)
-      xquisitoCommissionClient: xquisitoCommissionClient.toString(), // Comisión Xquisito parte cliente
-      ivaXquisitoClient: ivaXquisitoClient.toString(), // IVA sobre comisión Xquisito cliente
-      xquisitoCommissionRestaurant: xquisitoCommissionRestaurant.toString(), // Comisión Xquisito parte restaurante
-      xquisitoRestaurantCharge: xquisitoRestaurantCharge.toString(), // Comisión restaurante + IVA
-      xquisitoCommissionTotal: xquisitoCommissionTotal.toString(), // Comisión Xquisito total
+      evenCommissionClient: evenCommissionClient.toString(), // Comisión Even parte cliente
+      ivaEvenClient: ivaEvenClient.toString(), // IVA sobre comisión Even cliente
+      evenCommissionRestaurant: evenCommissionRestaurant.toString(), // Comisión Even parte restaurante
+      evenRestaurantCharge: evenRestaurantCharge.toString(), // Comisión restaurante + IVA
+      evenCommissionTotal: evenCommissionTotal.toString(), // Comisión Even total
       ...(userName && { userName }),
       ...(paymentType === "select-items" && {
         selectedItems: selectedItems.join(","),
@@ -619,7 +619,7 @@ export default function TipSelectionPage() {
                                   src={
                                     dish.images[0] || "/logo-short-green.webp"
                                   }
-                                  alt="Logo Xquisito"
+                                  alt="Logo Even"
                                   className="w-full h-full object-cover rounded-sm md:rounded-md lg:rounded-lg"
                                 />
                               </div>
@@ -1188,7 +1188,7 @@ export default function TipSelectionPage() {
                     + Comisión de servicio
                   </span>
                   <span className="text-black font-medium text-base md:text-lg lg:text-xl">
-                    ${xquisitoClientCharge.toFixed(2)} MXN
+                    ${evenClientCharge.toFixed(2)} MXN
                   </span>
                 </div>
               </div>

@@ -5,7 +5,7 @@ const Loader = () => {
         <div className="animate-pulse">
           <img
             src="/logo-short-green.webp"
-            alt="Xquisito Logo"
+            alt="Even Logo"
             className="size-24 md:size-28 lg:size-32 justify-self-center"
           />
         </div>

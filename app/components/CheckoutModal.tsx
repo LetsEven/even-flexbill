@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useTable } from '../context/TableContext';
+import { useState } from "react";
+import { useTable } from "../context/TableContext";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -22,40 +22,40 @@ export default function CheckoutModal({
   baseAmount,
   selectedUsers,
   onSuccess,
-  onError
+  onError,
 }: CheckoutModalProps) {
   const { state } = useTable();
   const [isProcessing, setIsProcessing] = useState(false);
-  
+
   // Form states
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [cardNumber, setCardNumber] = useState('');
-  const [expDate, setExpDate] = useState('');
-  const [cvv, setCvv] = useState('');
-  const [country, setCountry] = useState('Mexico');
-  const [postalCode, setPostalCode] = useState('');
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [expDate, setExpDate] = useState("");
+  const [cvv, setCvv] = useState("");
+  const [country, setCountry] = useState("Mexico");
+  const [postalCode, setPostalCode] = useState("");
 
   // Load saved data if available
   useState(() => {
-    if (typeof window !== 'undefined') {
-      const savedUserData = localStorage.getItem('xquisito-guest-data');
+    if (typeof window !== "undefined") {
+      const savedUserData = localStorage.getItem("even-guest-data");
       if (savedUserData) {
         try {
           const userData = JSON.parse(savedUserData);
           setFullName(`${userData.firstName} ${userData.lastName}`.trim());
-          setEmail(userData.email || '');
+          setEmail(userData.email || "");
         } catch (e) {
-          console.error('Failed to load saved user data:', e);
+          console.error("Failed to load saved user data:", e);
         }
       }
     }
   });
 
   const formatCardNumber = (value: string) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
     const matches = v.match(/\d{4,16}/g);
-    const match = matches && matches[0] || '';
+    const match = (matches && matches[0]) || "";
     const parts = [];
 
     for (let i = 0, len = match.length; i < len; i += 4) {
@@ -63,16 +63,16 @@ export default function CheckoutModal({
     }
 
     if (parts.length) {
-      return parts.join(' ');
+      return parts.join(" ");
     } else {
       return v;
     }
   };
 
   const formatExpDate = (value: string) => {
-    const v = value.replace(/\D/g, '');
+    const v = value.replace(/\D/g, "");
     if (v.length >= 2) {
-      return v.substring(0, 2) + '/' + v.substring(2, 4);
+      return v.substring(0, 2) + "/" + v.substring(2, 4);
     }
     return v;
   };
@@ -88,12 +88,13 @@ export default function CheckoutModal({
   };
 
   const validateForm = () => {
-    if (!fullName.trim()) return 'Please enter your full name';
-    if (!email.trim() || !email.includes('@')) return 'Please enter a valid email address';
-    if (!cardNumber.trim()) return 'Please enter card number';
-    if (!expDate.trim()) return 'Please enter expiration date';
-    if (!cvv.trim()) return 'Please enter CVV';
-    if (!postalCode.trim()) return 'Please enter postal code';
+    if (!fullName.trim()) return "Please enter your full name";
+    if (!email.trim() || !email.includes("@"))
+      return "Please enter a valid email address";
+    if (!cardNumber.trim()) return "Please enter card number";
+    if (!expDate.trim()) return "Please enter expiration date";
+    if (!cvv.trim()) return "Please enter CVV";
+    if (!postalCode.trim()) return "Please enter postal code";
     return null;
   };
 
@@ -108,44 +109,47 @@ export default function CheckoutModal({
 
     try {
       // Simulate payment processing with EcartPay-like behavior
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       // Save user data for future use
-      const [firstName, ...lastNameParts] = fullName.trim().split(' ');
-      const lastName = lastNameParts.join(' ') || 'User';
+      const [firstName, ...lastNameParts] = fullName.trim().split(" ");
+      const lastName = lastNameParts.join(" ") || "User";
       const userData = { firstName, lastName, email };
-      localStorage.setItem('xquisito-guest-data', JSON.stringify(userData));
+      localStorage.setItem("even-guest-data", JSON.stringify(userData));
 
       // Generate a mock payment ID
       const paymentId = `xqst_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
+
       // Store payment details
-      localStorage.setItem('xquisito-completed-payment', JSON.stringify({
-        paymentId,
-        amount,
-        tipAmount,
-        baseAmount,
-        selectedUsers,
-        tableNumber: state.tableNumber,
-        timestamp: Date.now()
-      }));
+      localStorage.setItem(
+        "even-completed-payment",
+        JSON.stringify({
+          paymentId,
+          amount,
+          tipAmount,
+          baseAmount,
+          selectedUsers,
+          tableNumber: state.tableNumber,
+          timestamp: Date.now(),
+        }),
+      );
 
       onSuccess(paymentId);
     } catch (error: any) {
-      onError(error.message || 'Payment processing failed');
+      onError(error.message || "Payment processing failed");
     } finally {
       setIsProcessing(false);
     }
   };
 
   const fillTestCard = () => {
-    setFullName('Test User');
-    setEmail('test@example.com');
-    setCardNumber('4242 4242 4242 4242');
-    setExpDate('12/25');
-    setCvv('123');
-    setCountry('Mexico');
-    setPostalCode('76900');
+    setFullName("Test User");
+    setEmail("test@example.com");
+    setCardNumber("4242 4242 4242 4242");
+    setExpDate("12/25");
+    setCvv("123");
+    setCountry("Mexico");
+    setPostalCode("76900");
   };
 
   if (!isOpen) return null;
@@ -156,13 +160,25 @@ export default function CheckoutModal({
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-lg">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Complete Payment</h2>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Complete Payment
+            </h2>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 transition-colors"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -191,11 +207,13 @@ export default function CheckoutModal({
         {/* Form */}
         <div className="px-6 py-4">
           {/* Test Card Helper */}
-          {process.env.NODE_ENV === 'development' && (
+          {process.env.NODE_ENV === "development" && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-800 font-medium text-sm">Development Mode</p>
+                  <p className="text-blue-800 font-medium text-sm">
+                    Development Mode
+                  </p>
                   <p className="text-blue-600 text-xs">Use test card data</p>
                 </div>
                 <button
@@ -274,7 +292,9 @@ export default function CheckoutModal({
                 <input
                   type="text"
                   value={cvv}
-                  onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').substring(0, 4))}
+                  onChange={(e) =>
+                    setCvv(e.target.value.replace(/\D/g, "").substring(0, 4))
+                  }
                   placeholder="123"
                   maxLength={4}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
@@ -330,7 +350,7 @@ export default function CheckoutModal({
               disabled={isProcessing}
               className="flex-1 py-3 px-4 bg-teal-700 text-white rounded-md font-medium hover:bg-teal-800 transition-colors disabled:opacity-50"
             >
-              {isProcessing ? 'Processing...' : `Pay $${amount.toFixed(2)}`}
+              {isProcessing ? "Processing..." : `Pay $${amount.toFixed(2)}`}
             </button>
           </div>
         </div>
