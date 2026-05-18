@@ -31,9 +31,20 @@ interface CartState {
 
 // Acciones del carrito
 type CartAction =
-  | { type: "ADD_ITEM"; payload: MenuItemData }
-  | { type: "REMOVE_ITEM"; payload: number }
-  | { type: "UPDATE_QUANTITY"; payload: { id: number; quantity: number } }
+  | { type: "ADD_ITEM"; payload: CartItem }
+  | { type: "REMOVE_ITEM"; payload: string } // cartItemId
+  | {
+      type: "UPDATE_QUANTITY";
+      payload: { cartItemId: string; quantity: number };
+    }
+  | {
+      type: "SET_CART_ITEM_ID";
+      payload: {
+        menuItemId: number;
+        customFieldsKey: string;
+        cartItemId: string;
+      };
+    }
   | { type: "CLEAR_CART" }
   | { type: "SET_USER_NAME"; payload: string }
   | { type: "SET_LOADING"; payload: boolean }
@@ -56,6 +67,16 @@ const initialState: CartState = {
   isLoading: false,
   cartId: null,
 };
+
+function computeTotals(items: CartItem[]) {
+  return {
+    totalItems: items.reduce((s, i) => s + i.quantity, 0),
+    totalPrice: items.reduce(
+      (s, i) => s + (i.price + (i.extraPrice || 0)) * i.quantity,
+      0,
+    ),
+  };
+}
 
 // Reducer del carrito
 function cartReducer(state: CartState, action: CartAction): CartState {
@@ -88,12 +109,54 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         userName: state.userName, // Mantener userName
       };
 
-    // Las acciones ADD_ITEM, REMOVE_ITEM, UPDATE_QUANTITY ahora son manejadas por el provider
-    // usando la API, pero mantenemos los casos para actualización optimista
-    case "ADD_ITEM":
-    case "REMOVE_ITEM":
-    case "UPDATE_QUANTITY":
-      return state;
+    case "ADD_ITEM": {
+      const newItem = action.payload;
+      const cfKey = JSON.stringify(newItem.customFields || []);
+      const existing = state.items.find(
+        (i) =>
+          i.id === newItem.id &&
+          JSON.stringify(i.customFields || []) === cfKey &&
+          (i.extraPrice || 0) === (newItem.extraPrice || 0),
+      );
+      const newItems = existing
+        ? state.items.map((i) =>
+            i === existing
+              ? { ...i, quantity: i.quantity + newItem.quantity }
+              : i,
+          )
+        : [...state.items, { ...newItem, cartItemId: undefined }];
+      return { ...state, ...computeTotals(newItems), items: newItems };
+    }
+
+    case "REMOVE_ITEM": {
+      const newItems = state.items.filter(
+        (i) => i.cartItemId !== action.payload,
+      );
+      return { ...state, ...computeTotals(newItems), items: newItems };
+    }
+
+    case "UPDATE_QUANTITY": {
+      const { cartItemId, quantity } = action.payload;
+      const newItems =
+        quantity <= 0
+          ? state.items.filter((i) => i.cartItemId !== cartItemId)
+          : state.items.map((i) =>
+              i.cartItemId === cartItemId ? { ...i, quantity } : i,
+            );
+      return { ...state, ...computeTotals(newItems), items: newItems };
+    }
+
+    case "SET_CART_ITEM_ID": {
+      const { menuItemId, customFieldsKey, cartItemId } = action.payload;
+      const newItems = state.items.map((i) =>
+        i.id === menuItemId &&
+        !i.cartItemId &&
+        JSON.stringify(i.customFields || []) === customFieldsKey
+          ? { ...i, cartItemId }
+          : i,
+      );
+      return { ...state, items: newItems };
+    }
 
     default:
       return state;
@@ -196,88 +259,156 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Agregar item al carrito
+  // Agregar item — optimistic update instantáneo, sin bloquear UI
   const addItem = async (
     item: MenuItemData,
     quantity: number = 1,
     specialInstructions?: string | null,
   ) => {
+    const previousItems = state.items;
+    const previousCartId = state.cartId;
+    const customFieldsKey = JSON.stringify(item.customFields || []);
+
+    const effectiveInstructions =
+      specialInstructions !== undefined
+        ? specialInstructions
+        : ((item as any).specialInstructions ?? null);
+
+    dispatch({
+      type: "ADD_ITEM",
+      payload: {
+        ...item,
+        quantity,
+        cartItemId: undefined,
+        specialInstructions: effectiveInstructions,
+      } as CartItem,
+    });
+
     try {
-      dispatch({ type: "SET_LOADING", payload: true });
-
-      const effectiveInstructions =
-        specialInstructions !== undefined
-          ? specialInstructions
-          : ((item as any).specialInstructions ?? null);
-
       const response = await cartApi.addToCart(
         item.id,
         quantity,
         item.customFields || [],
         item.extraPrice || 0,
-        item.price, // Pasar el precio base (ya con descuento aplicado si lo hay)
+        item.price,
         effectiveInstructions,
       );
 
-      if (response.success) {
-        // Refrescar carrito después de agregar
-        await refreshCart();
+      if (response.success && response.data) {
+        dispatch({
+          type: "SET_CART_ITEM_ID",
+          payload: {
+            menuItemId: item.id,
+            customFieldsKey,
+            cartItemId: response.data.cart_item_id,
+          },
+        });
       } else {
         console.error("Error adding item to cart:", response.error);
-        dispatch({ type: "SET_LOADING", payload: false });
+        dispatch({
+          type: "SET_CART",
+          payload: {
+            items: previousItems,
+            ...computeTotals(previousItems),
+            cartId: previousCartId,
+          },
+        });
       }
     } catch (error) {
       console.error("Error adding item to cart:", error);
-      dispatch({ type: "SET_LOADING", payload: false });
+      dispatch({
+        type: "SET_CART",
+        payload: {
+          items: previousItems,
+          ...computeTotals(previousItems),
+          cartId: previousCartId,
+        },
+      });
     }
   };
 
-  // Eliminar item del carrito
+  // Eliminar item — optimistic update instantáneo con rollback en error
   const removeItem = async (itemId: number) => {
-    try {
-      dispatch({ type: "SET_LOADING", payload: true });
-
-      // Buscar el cartItemId del item
-      const item = state.items.find((i) => i.id === itemId);
-      if (!item || !item.cartItemId) {
-        console.error("Cart item not found");
-        dispatch({ type: "SET_LOADING", payload: false });
-        return;
+    let item = state.items.find((i) => i.id === itemId);
+    if (!item?.cartItemId) {
+      const fresh = await cartApi.getCart();
+      if (fresh.success && fresh.data) {
+        const freshItems = fresh.data.items.map(convertApiItemToCartItem);
+        dispatch({
+          type: "SET_CART",
+          payload: {
+            items: freshItems,
+            ...computeTotals(freshItems),
+            cartId: fresh.data.cart_id,
+          },
+        });
+        item = freshItems.find((i) => i.id === itemId);
       }
+      if (!item?.cartItemId) return;
+    }
 
+    const previousItems = state.items;
+    const previousCartId = state.cartId;
+    dispatch({ type: "REMOVE_ITEM", payload: item.cartItemId });
+
+    try {
       const response = await cartApi.removeFromCart(item.cartItemId);
-
-      if (response.success) {
-        await refreshCart();
-      } else {
+      if (!response.success) {
         console.error("Error removing item from cart:", response.error);
-        dispatch({ type: "SET_LOADING", payload: false });
+        dispatch({
+          type: "SET_CART",
+          payload: {
+            items: previousItems,
+            ...computeTotals(previousItems),
+            cartId: previousCartId,
+          },
+        });
       }
     } catch (error) {
       console.error("Error removing item from cart:", error);
-      dispatch({ type: "SET_LOADING", payload: false });
+      dispatch({
+        type: "SET_CART",
+        payload: {
+          items: previousItems,
+          ...computeTotals(previousItems),
+          cartId: previousCartId,
+        },
+      });
     }
   };
 
-  // Actualizar cantidad de un item
+  // Actualizar cantidad — optimistic update instantáneo con rollback en error
   const updateQuantity = async (cartItemId: string, quantity: number) => {
-    try {
-      dispatch({ type: "SET_LOADING", payload: true });
+    const previousItems = state.items;
+    const previousCartId = state.cartId;
+    dispatch({ type: "UPDATE_QUANTITY", payload: { cartItemId, quantity } });
 
+    try {
       const response = await cartApi.updateCartItemQuantity(
         cartItemId,
         quantity,
       );
-
-      if (response.success) {
-        await refreshCart();
-      } else {
+      if (!response.success) {
         console.error("Error updating quantity:", response.error);
-        dispatch({ type: "SET_LOADING", payload: false });
+        dispatch({
+          type: "SET_CART",
+          payload: {
+            items: previousItems,
+            ...computeTotals(previousItems),
+            cartId: previousCartId,
+          },
+        });
       }
     } catch (error) {
       console.error("Error updating quantity:", error);
-      dispatch({ type: "SET_LOADING", payload: false });
+      dispatch({
+        type: "SET_CART",
+        payload: {
+          items: previousItems,
+          ...computeTotals(previousItems),
+          cartId: previousCartId,
+        },
+      });
     }
   };
 
