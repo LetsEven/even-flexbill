@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import MenuHeaderDish from "@/app/components/headers/MenuHeaderDish";
 import RestaurantClosedModal from "@/app/components/RestaurantClosedModal";
+import OutOfStockModal from "@/app/components/OutOfStockModal";
 import ValidationError from "@/app/components/ValidationError";
 import Loader from "@/app/components/UI/Loader";
 import {
@@ -83,6 +84,7 @@ export default function DishDetailPage() {
   const [reviewRating, setReviewRating] = useState(0);
   const [hoveredReviewRating, setHoveredReviewRating] = useState(0);
   const [showClosedModal, setShowClosedModal] = useState(false);
+  const [showOutOfStockModal, setShowOutOfStockModal] = useState(false);
   const [dishStats, setDishStats] = useState<ReviewStats | null>(null);
   const [myReview, setMyReview] = useState<Review | null>(null);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
@@ -149,6 +151,7 @@ export default function DishDetailPage() {
           dish: adaptDish(foundItem),
           section: section.name,
           customFields: parseCustomFields(foundItem),
+          isOutOfStock: (foundItem as MenuItemDB).is_out_of_stock ?? false,
         };
       }
     }
@@ -161,6 +164,7 @@ export default function DishDetailPage() {
     dish: MenuItemData;
     section: string;
     customFields: CustomField[];
+    isOutOfStock?: boolean;
   } | null>(initialDishData);
 
   // Fetch desde API (para recargas directas o si no está en caché)
@@ -171,7 +175,7 @@ export default function DishDetailPage() {
       setDishError(null);
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/menu/items/${dishId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/menu/items/${dishId}?restaurantId=${restaurantId}&branchNumber=${branchNumber}`,
         );
         if (!response.ok) {
           setDishError(response.status === 404 ? "not_found" : "error");
@@ -198,6 +202,7 @@ export default function DishDetailPage() {
           dish: adaptDish(foundItem),
           section: sectionName,
           customFields: parseCustomFields(foundItem),
+          isOutOfStock: foundItem.is_out_of_stock ?? false,
         });
         setDishLoading(false);
       } catch (error) {
@@ -462,6 +467,10 @@ export default function DishDetailPage() {
   const handleAddToCart = async (e?: React.MouseEvent): Promise<boolean> => {
     e?.stopPropagation();
     if (!dishData || !isFormValid) return false;
+    if (dishData.isOutOfStock) {
+      setShowOutOfStockModal(true);
+      return false;
+    }
     if (!isOpen) {
       setShowClosedModal(true);
       return false;
@@ -704,6 +713,11 @@ export default function DishDetailPage() {
         restaurantName={restaurant?.name}
         restaurantLogo={restaurant?.logo_url}
       />
+      <OutOfStockModal
+        isOpen={showOutOfStockModal}
+        onClose={() => setShowOutOfStockModal(false)}
+        itemName={dish.name}
+      />
 
       {/* Slider de imágenes */}
       <div className="absolute top-0 left-0 w-full h-96 md:h-[28rem] lg:h-[32rem] z-0">
@@ -721,7 +735,7 @@ export default function DishDetailPage() {
                 alt={`${dish.name} - Imagen ${index + 1}`}
                 className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-500 ${
                   index === currentImageIndex ? "opacity-100" : "opacity-0"
-                }`}
+                } ${dishData.isOutOfStock ? "blur-sm" : ""}`}
                 style={{
                   filter: "contrast(1.08) brightness(1.03)",
                   imageRendering: "crisp-edges",
@@ -736,7 +750,7 @@ export default function DishDetailPage() {
               <img
                 src="/logo-short-green.webp"
                 alt="Logo del restaurante"
-                className="w-32 md:w-40 lg:w-48 h-32 md:h-40 lg:h-48 object-contain"
+                className={`w-32 md:w-40 lg:w-48 h-32 md:h-40 lg:h-48 object-contain`}
                 style={{
                   imageRendering: "crisp-edges",
                   filter: "contrast(1.05) brightness(1.02)",
@@ -744,6 +758,13 @@ export default function DishDetailPage() {
                 loading="eager"
                 decoding="async"
               />
+            </div>
+          )}
+          {dishData.isOutOfStock && (
+            <div className="absolute bottom-22 z-10">
+              <span className="bg-red-600 text-white text-xs md:text-sm font-bold px-3 py-1 tracking-wide">
+                AGOTADO
+              </span>
             </div>
           )}
         </div>
@@ -1218,13 +1239,17 @@ export default function DishDetailPage() {
                 onClick={handleAddToCartAndReturn}
                 disabled={!isFormValid}
                 className={`flex-1 text-white py-3.5 md:py-4 lg:py-5 rounded-2xl transition-colors flex items-center justify-center ${
-                  isFormValid
-                    ? "bg-gradient-to-r from-[#34808C] to-[#173E44] cursor-pointer active:scale-95 transition-transform"
-                    : "bg-gray-400 cursor-not-allowed opacity-60"
+                  dishData.isOutOfStock
+                    ? "bg-gray-400 cursor-pointer active:scale-95 transition-transform"
+                    : isFormValid
+                      ? "bg-gradient-to-r from-[#34808C] to-[#173E44] cursor-pointer active:scale-95 transition-transform"
+                      : "bg-gray-400 cursor-not-allowed opacity-60"
                 }`}
               >
                 <span className="text-base md:text-lg font-medium">
-                  Agregar • ${(totalPrice * dishQuantity).toFixed(2)}
+                  {dishData.isOutOfStock
+                    ? "Producto agotado"
+                    : `Agregar • $${(totalPrice * dishQuantity).toFixed(2)}`}
                 </span>
               </button>
             </div>

@@ -11,6 +11,7 @@ import { useFlyToCart } from "@/app/hooks/useFlyToCart";
 import { useRestaurant } from "@/app/context/RestaurantContext";
 import { Plus, Minus } from "lucide-react";
 import { useRef, useState, useEffect, useMemo, memo } from "react";
+import OutOfStockModal from "@/app/components/OutOfStockModal";
 
 interface MenuItemProps {
   item: MenuItemDB | MenuItemData;
@@ -35,7 +36,12 @@ function MenuItem({ item, onRestaurantClosed }: MenuItemProps) {
     };
   }, [item]);
 
-  const { state, addItem, removeItem, updateQuantity } = useCart();
+  const isOutOfStock = useMemo(() => {
+    if ("images" in item) return false;
+    return (item as MenuItemDB).is_out_of_stock === true;
+  }, [item]);
+
+  const { state, addItem, decrementItem } = useCart();
   const { navigateWithTable } = useTableNavigation();
   const { flyToCart } = useFlyToCart();
   const { isOpen } = useRestaurant();
@@ -44,6 +50,7 @@ function MenuItem({ item, onRestaurantClosed }: MenuItemProps) {
   const isRemovingRef = useRef(false);
   const [localQuantity, setLocalQuantity] = useState(0);
   const [isPulsing, setIsPulsing] = useState(false);
+  const [showOutOfStockModal, setShowOutOfStockModal] = useState(false);
 
   const hasRequiredCustomFields = useMemo(() => {
     const dbItem = item as MenuItemDB;
@@ -71,6 +78,11 @@ function MenuItem({ item, onRestaurantClosed }: MenuItemProps) {
     e.stopPropagation();
 
     if (isAddingRef.current) return;
+
+    if (isOutOfStock) {
+      setShowOutOfStockModal(true);
+      return;
+    }
 
     if (!isOpen) {
       onRestaurantClosed?.();
@@ -156,14 +168,7 @@ function MenuItem({ item, onRestaurantClosed }: MenuItemProps) {
     setLocalQuantity((prev) => Math.max(0, prev - 1));
 
     try {
-      const cartItem = state.items.find(
-        (cartItem) => cartItem.id === adaptedItem.id,
-      );
-      if (cartItem && cartItem.quantity > 1) {
-        await updateQuantity(adaptedItem.id, cartItem.quantity - 1);
-      } else if (cartItem && cartItem.quantity === 1) {
-        await removeItem(adaptedItem.id);
-      }
+      await decrementItem(adaptedItem.id);
     } finally {
       isRemovingRef.current = false;
     }
@@ -176,98 +181,114 @@ function MenuItem({ item, onRestaurantClosed }: MenuItemProps) {
   const displayQuantity = Math.max(localQuantity, currentQuantity);
 
   return (
-    <div
-      className="border-b border-gray-300 py-4 md:py-6 lg:py-7 relative"
-      onClick={handleImageClick}
-    >
-      <div className="flex items-center gap-4 md:gap-5 lg:gap-6">
-        {/* Image */}
-        <div className="flex-shrink-0 cursor-pointer">
-          <div className="size-36 md:size-40 lg:size-44 bg-gray-300 rounded-xl md:rounded-2xl flex items-center justify-center hover:scale-105 transition-transform duration-200">
-            {adaptedItem.images[0] ? (
-              <img
-                src={adaptedItem.images[0]}
-                alt="Dish preview"
-                loading="lazy"
-                className="w-full h-full object-cover rounded-xl md:rounded-2xl"
-              />
-            ) : (
-              <img
-                src="/logo-short-green.webp"
-                alt="Logo Even"
-                loading="lazy"
-                className="size-18 md:size-20 lg:size-22 object-contain"
-              />
-            )}
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex justify-between">
-            <h3 className="text-lg md:text-xl lg:text-2xl font-medium text-black leading-tight capitalize line-clamp-2 break-words">
-              {adaptedItem.name}
-            </h3>
-            <div
-              className={`flex gap-1.5 md:gap-2 px-3 md:px-4 lg:px-5 py-0.5 md:py-1 h-fit rounded-full border items-center justify-center border-[#8e8e8e]/50 text-black transition-all ${isPulsing ? "bg-[#eab3f4]/50" : "bg-[#f9f9f9]"}`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Minus
-                className={`size-4 md:size-5 lg:size-6 ${displayQuantity > 0 ? "cursor-pointer" : "cursor-no-drop"}`}
-                onClick={displayQuantity > 0 ? handleRemoveFromCart : undefined}
-              />
-              <p className="font-normal text-base md:text-lg lg:text-xl">
-                {displayQuantity}
-              </p>
-              <div ref={plusButtonRef}>
-                <Plus
-                  className="size-4 md:size-5 lg:size-6 cursor-pointer"
-                  onClick={handleAddToCart}
+    <>
+      <OutOfStockModal
+        isOpen={showOutOfStockModal}
+        onClose={() => setShowOutOfStockModal(false)}
+        itemName={adaptedItem.name}
+      />
+      <div
+        className="border-b border-gray-300 py-4 md:py-6 lg:py-7 relative"
+        onClick={handleImageClick}
+      >
+        <div className="flex items-center gap-4 md:gap-5 lg:gap-6">
+          {/* Image */}
+          <div className="flex-shrink-0 cursor-pointer">
+            <div className="relative size-36 md:size-40 lg:size-44 bg-gray-300 rounded-xl md:rounded-2xl flex items-center justify-center hover:scale-105 transition-transform duration-200">
+              {adaptedItem.images[0] ? (
+                <img
+                  src={adaptedItem.images[0]}
+                  alt="Dish preview"
+                  loading="lazy"
+                  className={`w-full h-full object-cover rounded-xl md:rounded-2xl`}
                 />
-              </div>
-            </div>
-          </div>
-          {adaptedItem.features.length > 0 && (
-            <div className="flex gap-1 md:gap-1.5 mt-1 md:mt-2 mb-3 md:mb-4">
-              {adaptedItem.features.map((feature, index) => (
-                <div
-                  key={index}
-                  className="text-sm md:text-base lg:text-lg text-black font-medium border border-[#bfbfbf]/50 rounded-3xl px-3 md:px-4 py-1 md:py-1.5 shadow-sm"
-                >
-                  {feature}
-                </div>
-              ))}
-            </div>
-          )}
-          <p className="text-base md:text-lg lg:text-xl line-clamp-3 leading-4 md:leading-5 lg:leading-6 bg-gradient-to-b from-black to-black/30 bg-clip-text text-transparent">
-            {adaptedItem.description}
-          </p>
-          <div className="flex items-center justify-between mt-2 md:mt-3">
-            {adaptedItem.discount > 0 ? (
-              <div className="text-base md:text-lg lg:text-xl text-black flex flex-col">
-                <div>
-                  <span className="text-black line-through text-xs md:text-sm lg:text-base">
-                    ${adaptedItem.price} MXN
+              ) : (
+                <img
+                  src="/logo-short-green.webp"
+                  alt="Logo Even"
+                  loading="lazy"
+                  className={`size-18 md:size-20 lg:size-22 object-contain`}
+                />
+              )}
+              {isOutOfStock && (
+                <div className="absolute bottom-2 left-0">
+                  <span className="bg-red-600 text-white text-[12px] md:text-xs font-bold px-2 py-1 tracking-wide">
+                    AGOTADO
                   </span>
                 </div>
-                <div className="-translate-y-1">
-                  $
-                  {(
-                    adaptedItem.price *
-                    (1 - adaptedItem.discount / 100)
-                  ).toFixed(2)}{" "}
-                  MXN
+              )}
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex justify-between">
+              <h3 className="text-lg md:text-xl lg:text-2xl font-medium text-black leading-tight capitalize line-clamp-2 break-words">
+                {adaptedItem.name}
+              </h3>
+              <div
+                className={`flex gap-1.5 md:gap-2 px-3 md:px-4 lg:px-5 py-0.5 md:py-1 h-fit rounded-full border items-center justify-center border-[#8e8e8e]/50 text-black transition-all ${isPulsing ? "bg-[#eab3f4]/50" : "bg-[#f9f9f9]"}`}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Minus
+                  className={`size-4 md:size-5 lg:size-6 ${displayQuantity > 0 ? "cursor-pointer" : "cursor-no-drop"}`}
+                  onClick={
+                    displayQuantity > 0 ? handleRemoveFromCart : undefined
+                  }
+                />
+                <p className="font-normal text-base md:text-lg lg:text-xl">
+                  {displayQuantity}
+                </p>
+                <div ref={plusButtonRef}>
+                  <Plus
+                    className={`size-4 md:size-5 lg:size-6 ${isOutOfStock ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}`}
+                    onClick={handleAddToCart}
+                  />
                 </div>
               </div>
-            ) : (
-              <span className="text-base md:text-lg lg:text-xl text-black">
-                ${adaptedItem.price.toFixed(2)} MXN
-              </span>
+            </div>
+            {adaptedItem.features.length > 0 && (
+              <div className="flex gap-1 md:gap-1.5 mt-1 md:mt-2 mb-3 md:mb-4">
+                {adaptedItem.features.map((feature, index) => (
+                  <div
+                    key={index}
+                    className="text-sm md:text-base lg:text-lg text-black font-medium border border-[#bfbfbf]/50 rounded-3xl px-3 md:px-4 py-1 md:py-1.5 shadow-sm"
+                  >
+                    {feature}
+                  </div>
+                ))}
+              </div>
             )}
+            <p className="text-base md:text-lg lg:text-xl line-clamp-3 leading-4 md:leading-5 lg:leading-6 bg-gradient-to-b from-black to-black/30 bg-clip-text text-transparent">
+              {adaptedItem.description}
+            </p>
+            <div className="flex items-center justify-between mt-2 md:mt-3">
+              {adaptedItem.discount > 0 ? (
+                <div className="text-base md:text-lg lg:text-xl text-black flex flex-col">
+                  <div>
+                    <span className="text-black line-through text-xs md:text-sm lg:text-base">
+                      ${adaptedItem.price} MXN
+                    </span>
+                  </div>
+                  <div className="-translate-y-1">
+                    $
+                    {(
+                      adaptedItem.price *
+                      (1 - adaptedItem.discount / 100)
+                    ).toFixed(2)}{" "}
+                    MXN
+                  </div>
+                </div>
+              ) : (
+                <span className="text-base md:text-lg lg:text-xl text-black">
+                  ${adaptedItem.price.toFixed(2)} MXN
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
