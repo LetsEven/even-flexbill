@@ -10,6 +10,8 @@ import { useRestaurant } from "@/app/context/RestaurantContext";
 import { useGuest } from "@/app/context/GuestContext";
 import { useTableNavigation } from "@/app/hooks/useTableNavigation";
 import OrderAnimation from "@/app/components/UI/OrderAnimation";
+import RestaurantClosedModal from "@/app/components/RestaurantClosedModal";
+import OutOfStockModal from "@/app/components/OutOfStockModal";
 
 interface ReorderModalProps {
   isOpen: boolean;
@@ -36,13 +38,16 @@ function ReorderModal({
   const { state: cartState, addItem, removeItem, updateQuantity } = useCart();
   const { submitOrder } = useTable();
   const { user, isAuthenticated, isLoading: authLoading, profile } = useAuth();
-  const { branchNumber } = useRestaurant();
+  const { branchNumber, isOpen: restaurantIsOpen, restaurant, menu } = useRestaurant();
   const { guestName } = useGuest();
   const { navigateWithTable } = useTableNavigation();
 
   const [showOrderAnimation, setShowOrderAnimation] = useState(false);
   const [orderedItems, setOrderedItems] = useState<CartItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showClosedModal, setShowClosedModal] = useState(false);
+  const [showOutOfStockModal, setShowOutOfStockModal] = useState(false);
+  const [outOfStockItemName, setOutOfStockItemName] = useState<string | undefined>(undefined);
 
   // Snapshot of cart item IDs that existed before the modal opened
   const preModalCartIds = useRef<Set<number>>(new Set());
@@ -80,10 +85,29 @@ function ReorderModal({
     return result;
   }, [dishOrders]);
 
+  const outOfStockIds = useMemo(() => {
+    const ids = new Set<number>();
+    for (const section of menu ?? []) {
+      for (const item of section.items ?? []) {
+        if (item.is_out_of_stock) ids.add(item.id);
+      }
+    }
+    return ids;
+  }, [menu]);
+
   const getCartItem = (menuItemId: number) =>
     cartState.items.find((i) => i.id === menuItemId);
 
   const handleCardTap = async (order: DishOrder) => {
+    if (!restaurantIsOpen) {
+      setShowClosedModal(true);
+      return;
+    }
+    if (outOfStockIds.has(order.menu_item_id!)) {
+      setOutOfStockItemName(order.item);
+      setShowOutOfStockModal(true);
+      return;
+    }
     const cartItem = getCartItem(order.menu_item_id!);
     if (!cartItem || cartItem.quantity === 0) {
       await addItem({
@@ -111,6 +135,15 @@ function ReorderModal({
   };
 
   const handleIncrement = async (order: DishOrder) => {
+    if (!restaurantIsOpen) {
+      setShowClosedModal(true);
+      return;
+    }
+    if (outOfStockIds.has(order.menu_item_id!)) {
+      setOutOfStockItemName(order.item);
+      setShowOutOfStockModal(true);
+      return;
+    }
     const cartItem = getCartItem(order.menu_item_id!);
     if (!cartItem) {
       await handleCardTap(order);
@@ -206,6 +239,18 @@ function ReorderModal({
 
   return (
     <>
+      <RestaurantClosedModal
+        isOpen={showClosedModal}
+        onClose={() => setShowClosedModal(false)}
+        openingHours={restaurant?.opening_hours}
+        restaurantName={restaurant?.name}
+        restaurantLogo={restaurant?.logo_url}
+      />
+      <OutOfStockModal
+        isOpen={showOutOfStockModal}
+        onClose={() => setShowOutOfStockModal(false)}
+        itemName={outOfStockItemName}
+      />
       <div
         className="fixed inset-0 bg-black/25 backdrop-blur-xs z-[999] flex items-center justify-center"
         onClick={handleClose}
@@ -252,6 +297,7 @@ function ReorderModal({
                   const cartItem = getCartItem(order.menu_item_id!);
                   const qty = cartItem?.quantity ?? 0;
                   const isSelected = qty > 0;
+                  const itemIsOutOfStock = outOfStockIds.has(order.menu_item_id!);
 
                   const customFields = order.custom_fields as
                     | Array<{
@@ -271,10 +317,12 @@ function ReorderModal({
                     <div
                       key={key}
                       onClick={() => handleCardTap(order)}
-                      className={`flex items-center gap-3 md:gap-4 rounded-xl md:rounded-2xl p-3 md:p-4 border cursor-pointer transition-all duration-200 ${
-                        isSelected
-                          ? "bg-white/10 border-[#eab3f4]/70"
-                          : "bg-white/5 border-white/10"
+                      className={`flex items-center gap-3 md:gap-4 rounded-xl md:rounded-2xl p-3 md:p-4 border transition-all duration-200 ${
+                        itemIsOutOfStock
+                          ? "opacity-50 cursor-not-allowed bg-white/5 border-white/10"
+                          : isSelected
+                            ? "cursor-pointer bg-white/10 border-[#eab3f4]/70"
+                            : "cursor-pointer bg-white/5 border-white/10"
                       }`}
                     >
                       {/* Checkbox */}
@@ -304,21 +352,28 @@ function ReorderModal({
 
                       {/* Image */}
                       <div className="flex-shrink-0">
-                        <div className="size-16 md:size-20 rounded-sm overflow-hidden bg-gray-300">
+                        <div className="relative size-16 md:size-20 rounded-sm overflow-hidden bg-gray-300">
                           {order.images &&
                           order.images.length > 0 &&
                           order.images[0] ? (
                             <img
                               src={order.images[0]}
                               alt={order.item}
-                              className="w-full h-full object-cover"
+                              className={`w-full h-full object-cover ${itemIsOutOfStock ? "blur-sm" : ""}`}
                             />
                           ) : (
                             <img
                               src="/logo-short-green.webp"
                               alt="Logo Even"
-                              className="w-full h-full object-contain p-2"
+                              className={`w-full h-full object-contain p-2 ${itemIsOutOfStock ? "blur-sm" : ""}`}
                             />
+                          )}
+                          {itemIsOutOfStock && (
+                            <div className="absolute bottom-0.5 left-0.5">
+                              <span className="bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full tracking-wide">
+                                AGOTADO
+                              </span>
+                            </div>
                           )}
                         </div>
                       </div>

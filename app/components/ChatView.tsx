@@ -1,8 +1,10 @@
 "use client";
 
 import { ChevronDown, SendHorizontal, ShoppingBag, Check } from "lucide-react";
-import { useState, useRef, useEffect, memo } from "react";
+import { useState, useRef, useEffect, memo, useMemo } from "react";
 import { useRestaurant } from "../context/RestaurantContext";
+import RestaurantClosedModal from "./RestaurantClosedModal";
+import OutOfStockModal from "./OutOfStockModal";
 import { useGuest } from "../context/GuestContext";
 import { useAuth } from "../context/AuthContext";
 import { usePepper } from "../context/PepperContext";
@@ -258,11 +260,13 @@ const OrderButton = ({
   branchNumber: number | null;
   userId: string | null;
 }) => {
-  const { menu } = useRestaurant();
+  const { menu, isOpen, restaurant } = useRestaurant();
   const { refreshCart } = useCart();
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">(
     "idle",
   );
+  const [showClosedModal, setShowClosedModal] = useState(false);
+  const [showOutOfStockModal, setShowOutOfStockModal] = useState(false);
 
   // Resolver el ID real buscando por nombre en el menú cargado en contexto,
   // en lugar de confiar en el ID que provee el agente.
@@ -341,8 +345,28 @@ const OrderButton = ({
     return bestScore >= 0.5 ? bestId : dishId;
   })();
 
+  const isOutOfStock = useMemo(() => {
+    if (!menu?.length) return false;
+    for (const section of menu) {
+      for (const item of section.items ?? []) {
+        if (item.id === resolvedDishId) {
+          return item.is_out_of_stock === true;
+        }
+      }
+    }
+    return false;
+  }, [menu, resolvedDishId]);
+
   const handleAdd = async () => {
     if (status !== "idle") return;
+    if (!isOpen) {
+      setShowClosedModal(true);
+      return;
+    }
+    if (isOutOfStock) {
+      setShowOutOfStockModal(true);
+      return;
+    }
     setStatus("loading");
     cartApi.setRestaurantId(restaurantId);
     cartApi.setBranchNumber(branchNumber);
@@ -391,12 +415,25 @@ const OrderButton = ({
             };
 
   return (
-    <button
-      onClick={handleAdd}
-      disabled={status === "loading" || status === "done"}
-      className="mt-2 relative overflow-hidden flex items-center gap-2 transition-all active:scale-[0.97] font-semibold rounded-2xl px-5 py-3 text-base md:text-lg w-full justify-center text-black"
-      style={glassStyle}
-    >
+    <>
+      <RestaurantClosedModal
+        isOpen={showClosedModal}
+        onClose={() => setShowClosedModal(false)}
+        openingHours={restaurant?.opening_hours}
+        restaurantName={restaurant?.name}
+        restaurantLogo={restaurant?.logo_url}
+      />
+      <OutOfStockModal
+        isOpen={showOutOfStockModal}
+        onClose={() => setShowOutOfStockModal(false)}
+        itemName={dishName}
+      />
+      <button
+        onClick={handleAdd}
+        disabled={status === "loading" || status === "done"}
+        className="mt-2 relative overflow-hidden flex items-center gap-2 transition-all active:scale-[0.97] font-semibold rounded-2xl px-5 py-3 text-base md:text-lg w-full justify-center text-black"
+        style={glassStyle}
+      >
       {/* Specular highlight — franja de luz en el borde superior */}
       <div
         className="absolute top-0 left-0 right-0 pointer-events-none rounded-t-2xl"
@@ -428,6 +465,7 @@ const OrderButton = ({
         )}
       </span>
     </button>
+    </>
   );
 };
 
