@@ -507,6 +507,14 @@ export default function CardSelectionPage() {
           currency: "MXN",
           tableNumber: undefined,
           restaurantId: restaurantId?.toString(),
+          baseAmount,
+          tipAmount,
+          items: dishOrders.map((d) => ({
+            name: d.item,
+            price: d.price,
+            quantity: d.quantity,
+            extraPrice: d.extra_price || 0,
+          })),
         });
 
         const appleOrderId =
@@ -582,6 +590,14 @@ export default function CardSelectionPage() {
           currency: "MXN",
           tableNumber: undefined,
           restaurantId: restaurantId?.toString(),
+          baseAmount,
+          tipAmount,
+          items: dishOrders.map((d) => ({
+            name: d.item,
+            price: d.price,
+            quantity: d.quantity,
+            extraPrice: d.extra_price || 0,
+          })),
         });
 
         const googleOrderId =
@@ -736,6 +752,14 @@ export default function CardSelectionPage() {
         tableNumber: tableNumber || state.tableNumber,
         restaurantId: restaurantId,
         installments: selectedMSI || undefined,
+        baseAmount,
+        tipAmount,
+        items: dishOrders.map((d) => ({
+          name: d.item,
+          price: d.price,
+          quantity: d.quantity,
+          extraPrice: d.extra_price || 0,
+        })),
       };
 
       const paymentResult = await paymentService.processPayment(paymentData);
