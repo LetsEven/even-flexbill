@@ -49,6 +49,13 @@ export interface RecordPaymentTransactionParams {
   transaction_by?: string;
 }
 
+export interface CartItemForPayment {
+  name: string;
+  price: number;
+  quantity: number;
+  extraPrice?: number;
+}
+
 export interface ProcessPaymentParams {
   paymentMethodId: string;
   amount: number;
@@ -57,6 +64,10 @@ export interface ProcessPaymentParams {
   orderId: string;
   tableNumber: string | undefined;
   restaurantId: string;
+  installments?: number;
+  baseAmount?: number;
+  tipAmount?: number;
+  items?: CartItemForPayment[];
 }
 
 async function makeRequest(
@@ -254,6 +265,9 @@ export const paymentService = {
     currency: string;
     tableNumber?: string;
     restaurantId?: string;
+    baseAmount?: number;
+    tipAmount?: number;
+    items?: CartItemForPayment[];
   }): Promise<ApiResponse<{ orderId: string }>> {
     return makeRequest("/payments/apple-pay/order", {
       method: "POST",
@@ -267,6 +281,9 @@ export const paymentService = {
     currency: string;
     tableNumber?: string;
     restaurantId?: string;
+    baseAmount?: number;
+    tipAmount?: number;
+    items?: CartItemForPayment[];
   }): Promise<ApiResponse<{ orderId: string }>> {
     return makeRequest("/payments/google-pay/order", {
       method: "POST",
