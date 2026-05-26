@@ -664,9 +664,16 @@ export default function PaymentSuccessPage() {
                     />
                   </button>
                 </div>
-                <span className="text-lg md:text-xl lg:text-2xl font-medium text-white">
-                  ${amount.toFixed(2)} MXN
-                </span>
+                {paymentDetails?.installments ? (
+                  <span className="text-lg md:text-xl lg:text-2xl font-medium text-white">
+                    {paymentDetails.installments}x $
+                    {(amount / paymentDetails.installments).toFixed(2)} MXN
+                  </span>
+                ) : (
+                  <span className="text-lg md:text-xl lg:text-2xl font-medium text-white">
+                    ${amount.toFixed(2)} MXN
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -742,6 +749,22 @@ export default function PaymentSuccessPage() {
                       {(
                         (paymentDetails?.evenCommissionClient || 0) +
                         (paymentDetails?.ivaEvenClient || 0)
+                      ).toFixed(2)}{" "}
+                      MXN
+                    </span>
+                  </div>
+                )}
+
+                {paymentDetails?.installments && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-black font-medium text-base md:text-lg lg:text-xl">
+                      + Financiamiento ({paymentDetails.installments} meses)
+                    </span>
+                    <span className="text-black font-medium text-base md:text-lg lg:text-xl">
+                      $
+                      {(
+                        (paymentDetails.totalAmountCharged || 0) -
+                        (paymentDetails.installmentBaseAmount || 0)
                       ).toFixed(2)}{" "}
                       MXN
                     </span>

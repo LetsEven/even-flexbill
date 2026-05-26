@@ -20,6 +20,7 @@ import { useAgentStatus } from "@/app/hooks/useAgentStatus";
 import { Plus, Trash2, Loader2, CircleAlert, X } from "lucide-react";
 import { getCardTypeIcon } from "@/app/utils/cardIcons";
 import { usePaymentProvider } from "@/app/hooks/usePaymentProvider";
+import { useMsiConfig } from "@/app/hooks/useMsiConfig";
 
 export default function CardSelectionPage() {
   const { validationError, restaurantId, branchNumber } = useValidateAccess();
@@ -28,6 +29,7 @@ export default function CardSelectionPage() {
     restaurantId,
     branchNumber ? parseInt(branchNumber) : null,
   );
+  const { msiConfig } = useMsiConfig();
   const { state, dispatch, loadTableData } = useTable();
   const { navigateWithTable } = useTableNavigation();
   const searchParams = useSearchParams();
@@ -392,7 +394,7 @@ export default function CardSelectionPage() {
             even_client_charge: evenCommissionClient + ivaEvenClient,
             even_restaurant_charge: evenRestaurantCharge,
             even_rate_applied: evenRateApplied,
-            total_amount_charged: totalAmountCharged,
+            total_amount_charged: selectedMSI ? displayTotal : totalAmountCharged,
             subtotal_for_commission: subtotalForCommission,
             currency: "MXN",
             transaction_by: transactionBy,
@@ -429,7 +431,9 @@ export default function CardSelectionPage() {
           evenCommissionRestaurant,
           evenRestaurantCharge,
           evenCommissionTotal,
-          totalAmountCharged,
+          totalAmountCharged: selectedMSI ? displayTotal : totalAmountCharged,
+          installments: selectedMSI || null,
+          installmentBaseAmount: selectedMSI ? totalAmountCharged : null,
           dishCount:
             paymentType === "user-items"
               ? dishOrders.filter((d) => d.guest_name === userName).length
@@ -754,7 +758,7 @@ export default function CardSelectionPage() {
         installments: selectedMSI || undefined,
         baseAmount,
         tipAmount,
-        items: dishOrders.map((d) => ({
+        items: selectedMSI ? undefined : dishOrders.map((d) => ({
           name: d.item,
           price: d.price,
           quantity: d.quantity,
@@ -841,10 +845,20 @@ export default function CardSelectionPage() {
 
       throw new Error("Formato de respuesta de pago inesperado");
     } catch (error) {
-      const errMsg =
+      const rawMessage =
         error instanceof Error ? error.message : "Error desconocido";
-      console.error("Payment error:", error);
-      setErrorMessage(errMsg);
+      const errorTranslations: Record<string, string> = {
+        "Transaction rejected by your bank, please try another card.":
+          "Tu banco rechazó la transacción. Por favor intenta con otra tarjeta.",
+        "Insufficient funds":
+          "Fondos insuficientes. Por favor intenta con otra tarjeta.",
+        "Card expired":
+          "Tu tarjeta está vencida. Por favor agrega una tarjeta vigente.",
+        "Invalid card number": "Número de tarjeta inválido.",
+        "An unknown error occurred":
+          "Ocurrió un error al procesar el pago. Por favor intenta de nuevo.",
+      };
+      setErrorMessage(errorTranslations[rawMessage] ?? rawMessage);
     } finally {
       setIsProcessing(false);
     }
@@ -896,26 +910,7 @@ export default function CardSelectionPage() {
     );
     const cardBrand = selectedMethod?.cardBrand;
 
-    // Tasas del portal EcartPay (pre-IVA)
-    const msiOptions =
-      cardBrand === "amex"
-        ? [
-            { months: 3, rate: 3.25 },
-            { months: 6, rate: 6.25 },
-            { months: 9, rate: 8.25 },
-            { months: 12, rate: 10.25 },
-            { months: 15, rate: 13.25 },
-            { months: 18, rate: 15.25 },
-            { months: 21, rate: 17.25 },
-            { months: 24, rate: 19.25 },
-          ]
-        : [
-            { months: 3, rate: 4.26 },
-            { months: 6, rate: 7.3 },
-            { months: 9, rate: 8.5 },
-            { months: 12, rate: 13.0 },
-            { months: 18, rate: 18.25 },
-          ];
+    const msiOptions = cardBrand === "amex" ? msiConfig.amex : msiConfig.visaMc;
 
     const selectedOption = msiOptions.find((opt) => opt.months === selectedMSI);
     if (!selectedOption) return totalAmountCharged;
@@ -1072,7 +1067,7 @@ export default function CardSelectionPage() {
                     const selectedMethod = allPaymentMethods.find(
                       (pm) => pm.id === selectedPaymentMethodId,
                     );
-                    return selectedMethod?.cardType === "credit" ? (
+                    return selectedMethod?.cardType === "credit" && msiConfig.isActive && totalAmountCharged >= 300 ? (
                       <div
                         className="py-2 cursor-pointer"
                         onClick={() => setShowPaymentOptionsModal(true)}
@@ -1416,27 +1411,7 @@ export default function CardSelectionPage() {
                   );
                   const cardBrand = selectedMethod?.cardBrand;
 
-                  // Tasas del portal EcartPay (pre-IVA)
-                  const msiOptions =
-                    cardBrand === "amex"
-                      ? [
-                          { months: 3, rate: 3.25, minAmount: 300 },
-                          { months: 6, rate: 6.25, minAmount: 600 },
-                          { months: 9, rate: 8.25, minAmount: 900 },
-                          { months: 12, rate: 10.25, minAmount: 1200 },
-                          { months: 15, rate: 13.25, minAmount: 1800 },
-                          { months: 18, rate: 15.25, minAmount: 1800 },
-                          { months: 21, rate: 17.25, minAmount: 1800 },
-                          { months: 24, rate: 19.25, minAmount: 1800 },
-                        ]
-                      : [
-                          // Visa/Mastercard — tasas configuradas en portal EcartPay
-                          { months: 3, rate: 4.26, minAmount: 300 },
-                          { months: 6, rate: 7.3, minAmount: 600 },
-                          { months: 9, rate: 8.5, minAmount: 900 },
-                          { months: 12, rate: 13.0, minAmount: 1200 },
-                          { months: 18, rate: 18.25, minAmount: 1800 },
-                        ];
+                  const msiOptions = cardBrand === "amex" ? msiConfig.amex : msiConfig.visaMc;
 
                   return (
                     <div className="space-y-2.5">

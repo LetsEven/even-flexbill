@@ -56,6 +56,19 @@ export interface CartItemForPayment {
   extraPrice?: number;
 }
 
+export interface MsiOption {
+  months: number;
+  rate: number;
+  minAmount: number;
+  fixedInstallments: boolean;
+}
+
+export interface MsiConfig {
+  isActive: boolean;
+  visaMc: MsiOption[];
+  amex: MsiOption[];
+}
+
 export interface ProcessPaymentParams {
   paymentMethodId: string;
   amount: number;
@@ -296,5 +309,9 @@ export const paymentService = {
     guestId: string,
   ): Promise<ApiResponse<{ migratedCount: number }>> {
     return apiService.migrateGuestPaymentMethods(guestId);
+  },
+
+  async getMsiConfiguration(): Promise<ApiResponse<MsiConfig>> {
+    return makeRequest("/payments/installment-config");
   },
 };
