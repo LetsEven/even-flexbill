@@ -312,6 +312,10 @@ export const paymentService = {
   },
 
   async getMsiConfiguration(): Promise<ApiResponse<MsiConfig>> {
-    return makeRequest("/payments/installment-config");
+    const result = await makeRequest("/payments/installment-config");
+    if (result.success && result.data) {
+      return { success: true, data: result.data.data ?? result.data };
+    }
+    return result;
   },
 };

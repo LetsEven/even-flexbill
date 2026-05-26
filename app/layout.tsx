@@ -129,9 +129,8 @@ export default async function RootLayout({
         style={{ fontFamily: "var(--font-helvetica-neue)" }}
       >
         <Script
-          src="https://ecartpay.com/sdk/pay.js"
+          src="https://ecartpay.com/sdk/pay.js?v=2"
           strategy="afterInteractive"
-          nonce={nonce}
         />
         <AuthProvider>
           <RestaurantProvider>
