@@ -130,6 +130,7 @@ export default function CardSelectionPage() {
   const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
   const [showPaymentAnimation, setShowPaymentAnimation] = useState(false);
   const [isLoadingInitial, setIsLoadingInitial] = useState(true);
+  const [isTableDataReady, setIsTableDataReady] = useState(false);
   const [showTotalModal, setShowTotalModal] = useState(false);
   const [showPaymentOptionsModal, setShowPaymentOptionsModal] = useState(false);
   const [selectedMSI, setSelectedMSI] = useState<number | null>(null);
@@ -193,15 +194,10 @@ export default function CardSelectionPage() {
     const loadData = async () => {
       if (state.tableNumber) {
         // Si no hay datos cargados o están desactualizados, cargar
-        if (
-          !state.dishOrders ||
-          state.dishOrders.length === 0 ||
-          !state.tableSummary
-        ) {
-          await loadTableData();
-        } else {
-        }
+        await loadTableData();
+        setIsTableDataReady(true);
       } else if (!state.tableNumber) {
+        setIsTableDataReady(true);
       }
     };
     loadData();
@@ -219,6 +215,64 @@ export default function CardSelectionPage() {
   const unpaidDishes = dishOrders.filter(
     (dish) => dish.payment_status === "not_paid" || !dish.payment_status,
   );
+
+  // Items para enviar a EcartPay según el tipo de pago
+  const getEcartPayItems = () => {
+    if (paymentType === "user-items" && userName) {
+      return dishOrders
+        .filter(
+          (d) =>
+            (d.payment_status === "not_paid" || !d.payment_status) &&
+            d.guest_name === userName,
+        )
+        .map((d) => ({
+          name: d.item,
+          price: d.price,
+          quantity: d.quantity,
+          extraPrice: d.extra_price || 0,
+        }));
+    }
+    if (paymentType === "select-items") {
+      return dishOrders
+        .filter((d) => selectedItems.includes(d.dish_order_id?.toString()))
+        .map((d) => ({
+          name: d.item,
+          price: d.price,
+          quantity: d.quantity,
+          extraPrice: d.extra_price || 0,
+        }));
+    }
+    // full-bill, choose-amount, equal-shares: items simplificados que suman el monto exacto
+    const items: {
+      name: string;
+      price: number;
+      quantity: number;
+      extraPrice: number;
+    }[] = [];
+    if (baseAmount > 0)
+      items.push({
+        name: "Consumo",
+        price: baseAmount,
+        quantity: 1,
+        extraPrice: 0,
+      });
+    if (tipAmount > 0)
+      items.push({
+        name: "Propina",
+        price: tipAmount,
+        quantity: 1,
+        extraPrice: 0,
+      });
+    const commission = (evenCommissionClient || 0) + (ivaEvenClient || 0);
+    if (commission > 0)
+      items.push({
+        name: "Cargo por servicio",
+        price: commission,
+        quantity: 1,
+        extraPrice: 0,
+      });
+    return items;
+  };
 
   const unpaidAmount = unpaidDishes.reduce((sum, dish) => {
     return sum + (dish.total_price || 0);
@@ -394,7 +448,9 @@ export default function CardSelectionPage() {
             even_client_charge: evenCommissionClient + ivaEvenClient,
             even_restaurant_charge: evenRestaurantCharge,
             even_rate_applied: evenRateApplied,
-            total_amount_charged: selectedMSI ? displayTotal : totalAmountCharged,
+            total_amount_charged: selectedMSI
+              ? displayTotal
+              : totalAmountCharged,
             subtotal_for_commission: subtotalForCommission,
             currency: "MXN",
             transaction_by: transactionBy,
@@ -410,6 +466,14 @@ export default function CardSelectionPage() {
 
       // Store payment success data for payment-success page (rápido, solo localStorage)
       if (typeof window !== "undefined") {
+        // Limpiar datos de pago anteriores para que payment-success lea datos frescos
+        sessionStorage.removeItem("even-current-payment-key");
+        for (let i = sessionStorage.length - 1; i >= 0; i--) {
+          const key = sessionStorage.key(i);
+          if (key?.startsWith("even-payment-success-"))
+            sessionStorage.removeItem(key);
+        }
+
         // Get payment method details
         const selectedMethod = allPaymentMethods.find(
           (pm) => pm.id === selectedPaymentMethodId,
@@ -513,12 +577,7 @@ export default function CardSelectionPage() {
           restaurantId: restaurantId?.toString(),
           baseAmount,
           tipAmount,
-          items: dishOrders.map((d) => ({
-            name: d.item,
-            price: d.price,
-            quantity: d.quantity,
-            extraPrice: d.extra_price || 0,
-          })),
+          items: getEcartPayItems(),
         });
 
         const appleOrderId =
@@ -596,12 +655,7 @@ export default function CardSelectionPage() {
           restaurantId: restaurantId?.toString(),
           baseAmount,
           tipAmount,
-          items: dishOrders.map((d) => ({
-            name: d.item,
-            price: d.price,
-            quantity: d.quantity,
-            extraPrice: d.extra_price || 0,
-          })),
+          items: getEcartPayItems(),
         });
 
         const googleOrderId =
@@ -758,12 +812,11 @@ export default function CardSelectionPage() {
         installments: selectedMSI || undefined,
         baseAmount,
         tipAmount,
-        items: selectedMSI ? undefined : dishOrders.map((d) => ({
-          name: d.item,
-          price: d.price,
-          quantity: d.quantity,
-          extraPrice: d.extra_price || 0,
-        })),
+        items:
+          selectedMSI ||
+          (paymentType !== "user-items" && paymentType !== "select-items")
+            ? undefined
+            : getEcartPayItems(),
       };
 
       const paymentResult = await paymentService.processPayment(paymentData);
@@ -1067,7 +1120,9 @@ export default function CardSelectionPage() {
                     const selectedMethod = allPaymentMethods.find(
                       (pm) => pm.id === selectedPaymentMethodId,
                     );
-                    return selectedMethod?.cardType === "credit" && msiConfig.isActive && totalAmountCharged >= 300 ? (
+                    return selectedMethod?.cardType === "credit" &&
+                      msiConfig.isActive &&
+                      totalAmountCharged >= 300 ? (
                       <div
                         className="py-2 cursor-pointer"
                         onClick={() => setShowPaymentOptionsModal(true)}
@@ -1411,7 +1466,8 @@ export default function CardSelectionPage() {
                   );
                   const cardBrand = selectedMethod?.cardBrand;
 
-                  const msiOptions = cardBrand === "amex" ? msiConfig.amex : msiConfig.visaMc;
+                  const msiOptions =
+                    cardBrand === "amex" ? msiConfig.amex : msiConfig.visaMc;
 
                   return (
                     <div className="space-y-2.5">
