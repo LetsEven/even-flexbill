@@ -16,6 +16,16 @@ import CardScanner from "@/app/components/CardScanner";
 import Loader from "@/app/components/UI/Loader";
 import { useAuth } from "@/app/context/AuthContext";
 
+const MONTHS = [
+  "01", "02", "03", "04", "05", "06",
+  "07", "08", "09", "10", "11", "12",
+];
+const START_YEAR = new Date().getFullYear();
+const YEARS = Array.from(
+  { length: process.env.NODE_ENV === "development" ? 40 : 10 },
+  (_, i) => String(START_YEAR + i).slice(-2),
+);
+
 function AddCardContent() {
   const { state } = useTable();
   const { navigateWithTable } = useTableNavigation();
@@ -30,7 +40,8 @@ function AddCardContent() {
 
   const [fullName, setFullName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
-  const [expDate, setExpDate] = useState("");
+  const [expMonthIdx, setExpMonthIdx] = useState(0);
+  const [expYearIdx, setExpYearIdx] = useState(0);
   const [cvv, setCvv] = useState("");
   const [showScanner, setShowScanner] = useState(false);
   const [isLoadingParams, setIsLoadingParams] = useState(true);
@@ -38,7 +49,6 @@ function AddCardContent() {
   const [errors, setErrors] = useState<{
     fullName?: string;
     cardNumber?: string;
-    expDate?: string;
     cvv?: string;
     general?: string;
   }>({});
@@ -49,9 +59,16 @@ function AddCardContent() {
     refreshPaymentMethods();
   }, []);
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.currentTarget.blur();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   const handleFullNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    const textOnlyRegex = /^[a-zA-ZÀ-ÿ\u00f1\u00d1\s'-]*$/;
+    const textOnlyRegex = /^[a-zA-ZÀ-ÿñÑ\s'-]*$/;
 
     if (textOnlyRegex.test(value)) {
       setFullName(value);
@@ -63,7 +80,8 @@ function AddCardContent() {
   const fillTestCard = () => {
     setFullName("Test User");
     setCardNumber("4242 4242 4242 4242");
-    setExpDate("12/25");
+    setExpMonthIdx(11); // December
+    setExpYearIdx(2);   // 3rd year in range
     setCvv("123");
   };
 
@@ -73,7 +91,6 @@ function AddCardContent() {
     if (!fullName.trim()) newErrors.fullName = "Ingresa tu nombre completo";
     if (!cardNumber.trim())
       newErrors.cardNumber = "Ingresa el número de tarjeta";
-    if (!expDate.trim()) newErrors.expDate = "Ingresa la fecha de expiración";
     if (!cvv.trim()) newErrors.cvv = "Ingresa el CVV";
 
     if (Object.keys(newErrors).length > 0) {
@@ -81,7 +98,6 @@ function AddCardContent() {
       return;
     }
 
-    // Validar tarjeta repetida
     const lastFourDigits = cardNumber
       .replace(/\s+/g, "")
       .slice(-4)
@@ -99,6 +115,8 @@ function AddCardContent() {
 
     setErrors({});
     setIsLoading(true);
+
+    const expDate = `${MONTHS[expMonthIdx]}/${YEARS[expYearIdx]}`;
 
     try {
       if (user) {
@@ -120,10 +138,8 @@ function AddCardContent() {
           await refreshPaymentMethods();
         }
 
-        // Force refresh para garantizar sync con el servidor
         await refreshPaymentMethods();
 
-        // Check if we came from saved-cards page
         const fromSavedCards = document.referrer.includes("/saved-cards");
 
         if (fromSavedCards) {
@@ -132,11 +148,16 @@ function AddCardContent() {
           router.back();
         }
       } else {
-        setErrors({
-          general:
-            result.error?.message ||
-            "No se pudo agregar la tarjeta. Intenta de nuevo.",
-        });
+        const rawError =
+          typeof result.error === "string"
+            ? result.error
+            : (result.error as unknown as { message?: string })?.message ||
+              "No se pudo agregar la tarjeta. Intenta de nuevo.";
+        const ERROR_TRANSLATIONS: Record<string, string> = {
+          "Invalid expiry date": "Fecha de expiración inválida",
+        };
+        const errorMsg = ERROR_TRANSLATIONS[rawError] ?? rawError;
+        setErrors({ general: errorMsg });
       }
     } catch (error) {
       console.error("Error saving card:", error);
@@ -166,14 +187,6 @@ function AddCardContent() {
     }
   };
 
-  const formatExpDate = (value: string) => {
-    const v = value.replace(/\D/g, "");
-    if (v.length >= 2) {
-      return v.substring(0, 2) + "/" + v.substring(2, 4);
-    }
-    return v;
-  };
-
   const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     const numbersOnlyRegex = /^[0-9\s]*$/;
@@ -183,18 +196,6 @@ function AddCardContent() {
       setCardNumber(formatted);
       if (errors.cardNumber)
         setErrors((prev) => ({ ...prev, cardNumber: undefined }));
-    }
-  };
-
-  const handleExpDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const expDateRegex = /^[0-9/]*$/;
-
-    if (expDateRegex.test(value)) {
-      const formatted = formatExpDate(value);
-      setExpDate(formatted);
-      if (errors.expDate)
-        setErrors((prev) => ({ ...prev, expDate: undefined }));
     }
   };
 
@@ -213,11 +214,19 @@ function AddCardContent() {
     expiryDate: string;
     cardholderName: string;
   }) => {
-    // Auto-completar campos con datos escaneados
     setCardNumber(formatCardNumber(result.cardNumber));
-    setExpDate(result.expiryDate);
     setFullName(result.cardholderName);
     setShowScanner(false);
+
+    const parts = result.expiryDate.split("/");
+    if (parts.length === 2) {
+      const mm = parts[0].padStart(2, "0");
+      const yy = parts[1].slice(-2);
+      const mIdx = MONTHS.indexOf(mm);
+      const yIdx = YEARS.indexOf(yy);
+      if (mIdx >= 0) setExpMonthIdx(mIdx);
+      if (yIdx >= 0) setExpYearIdx(yIdx);
+    }
   };
 
   // Auto-abrir scanner si viene el parámetro scan=true
@@ -226,7 +235,6 @@ function AddCardContent() {
     if (shouldAutoScan) {
       setShowScanner(true);
     }
-    // Marcar que ya terminó de leer los parámetros
     setIsLoadingParams(false);
   }, [searchParams]);
 
@@ -284,6 +292,7 @@ function AddCardContent() {
                   </div>
                 </div>
               )}
+
               {/* Add Card Form */}
               <div className="space-y-4 md:space-x-5 text-sm md:text-base lg:text-lg">
                 <div>
@@ -294,6 +303,8 @@ function AddCardContent() {
                     type="text"
                     value={fullName}
                     onChange={handleFullNameChange}
+                    onKeyDown={handleKeyDown}
+                    autoComplete="cc-name"
                     placeholder="John Doe"
                     className={`w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 border text-black rounded-lg focus:outline-none focus:ring focus:ring-teal-500 focus:border-transparent ${errors.fullName ? "border-red-500 bg-red-50" : "border-gray-300"}`}
                   />
@@ -312,6 +323,9 @@ function AddCardContent() {
                     type="text"
                     value={cardNumber}
                     onChange={handleCardNumberChange}
+                    onKeyDown={handleKeyDown}
+                    autoComplete="cc-number"
+                    inputMode="numeric"
                     placeholder="**** 2098"
                     maxLength={19}
                     className={`w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 text-black rounded-lg focus:outline-none focus:ring focus:ring-teal-500 focus:border-transparent ${errors.cardNumber ? "border border-red-500 bg-red-50" : "bg-gray-100 border border-gray-200"}`}
@@ -323,24 +337,41 @@ function AddCardContent() {
                   )}
                 </div>
 
-                {/* Exp Date Field */}
+                {/* Expiration Date */}
                 <div className="text-sm md:text-base lg:text-lg">
                   <label className="block text-gray-700 mb-2">
                     Fecha de expiración
                   </label>
-                  <input
-                    type="text"
-                    value={expDate}
-                    onChange={handleExpDateChange}
-                    placeholder="02/24"
-                    maxLength={5}
-                    className={`w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 rounded-lg focus:outline-none focus:ring focus:ring-teal-500 focus:border-transparent text-black ${errors.expDate ? "border border-red-500 bg-red-50" : "bg-gray-100 border border-gray-200"}`}
-                  />
-                  {errors.expDate && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors.expDate}
-                    </p>
-                  )}
+                  <div className="flex gap-3">
+                    <select
+                      value={MONTHS[expMonthIdx]}
+                      onChange={(e) =>
+                        setExpMonthIdx(MONTHS.indexOf(e.target.value))
+                      }
+                      autoComplete="cc-exp-month"
+                      className="flex-1 px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 rounded-lg text-black focus:outline-none focus:ring focus:ring-teal-500 focus:border-transparent bg-gray-100 border border-gray-200"
+                    >
+                      {MONTHS.map((m) => (
+                        <option key={m} value={m}>
+                          {m}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={YEARS[expYearIdx]}
+                      onChange={(e) =>
+                        setExpYearIdx(YEARS.indexOf(e.target.value))
+                      }
+                      autoComplete="cc-exp-year"
+                      className="flex-1 px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 rounded-lg text-black focus:outline-none focus:ring focus:ring-teal-500 focus:border-transparent bg-gray-100 border border-gray-200"
+                    >
+                      {YEARS.map((y) => (
+                        <option key={y} value={y}>
+                          {y}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 {/* CVV Field */}
@@ -350,6 +381,9 @@ function AddCardContent() {
                     type="text"
                     value={cvv}
                     onChange={handleCvvChange}
+                    onKeyDown={handleKeyDown}
+                    autoComplete="cc-csc"
+                    inputMode="numeric"
                     placeholder="123"
                     maxLength={4}
                     className={`w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 text-black rounded-lg focus:outline-none focus:ring focus:ring-teal-500 focus:border-transparent ${errors.cvv ? "border border-red-500 bg-red-50" : "border border-gray-300"}`}
