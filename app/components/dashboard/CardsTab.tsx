@@ -99,7 +99,7 @@ export default function CardsTab() {
                       <div>
                         <div className="flex items-center gap-2 md:gap-3 lg:gap-4">
                           <span className="text-black text-base md:text-lg lg:text-xl">
-                            **** **** **** {method.lastFourDigits}
+                            **** {method.lastFourDigits}
                           </span>
                           {method.expiryMonth && method.expiryYear && (
                             <p className="text-xs md:text-sm lg:text-base text-gray-500">

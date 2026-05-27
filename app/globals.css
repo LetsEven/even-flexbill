@@ -379,7 +379,7 @@ body {
   animation: dash-check 0.9s 0.3s ease-in-out forwards;
 }
 
-svg {
+.animated_checkmark svg {
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
   backface-visibility: hidden;

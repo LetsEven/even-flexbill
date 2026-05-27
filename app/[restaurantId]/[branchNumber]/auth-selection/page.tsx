@@ -50,8 +50,7 @@ export default function AuthSelectionPage() {
   const [otp, setOtp] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const [gender, setGender] = useState("");
+  const [age, setAge] = useState<number | "">("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [countdown, setCountdown] = useState(0);
@@ -176,14 +175,15 @@ export default function AuthSelectionPage() {
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (age === "") return;
     setError("");
     setLoading(true);
     try {
+      const birthYear = new Date().getUTCFullYear() - Number(age);
       const response = await updateProfile({
         firstName,
         lastName,
-        birthDate,
-        gender: gender as "male" | "female" | "other",
+        birthDate: `${birthYear}-01-01`,
       });
       if (response.success) {
         await refreshProfile();
@@ -311,12 +311,6 @@ export default function AuthSelectionPage() {
                       />
                     </div>
                   </div>
-                  <p className="text-white/60 text-xs">
-                    Ejemplo:{" "}
-                    {countryCode === "+52" || countryCode === "+1"
-                      ? "500 555 0006"
-                      : "123 456 789"}
-                  </p>
                 </div>
 
                 <button
@@ -410,7 +404,7 @@ export default function AuthSelectionPage() {
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder="Nombre"
-                    className="h-[48px] w-full pl-10 pr-3 text-gray-700 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0a8b9b]"
+                    className="h-[48px] w-full pl-10 pr-3 text-gray-600 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] appearance-none"
                     required
                     disabled={loading}
                   />
@@ -420,48 +414,37 @@ export default function AuthSelectionPage() {
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   placeholder="Apellido"
-                  className="h-[48px] w-full px-3 text-gray-700 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0a8b9b]"
-                  required
+                  className="h-[48px] w-full px-3 text-gray-600 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] appearance-none"
                   disabled={loading}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-white mb-1">
-                  Fecha de nacimiento
-                </label>
-                <input
-                  type="date"
-                  value={birthDate}
-                  onChange={(e) => setBirthDate(e.target.value)}
-                  max={new Date().toISOString().split("T")[0]}
-                  className="h-[48px] w-full px-3 text-gray-700 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0a8b9b]"
-                  disabled={loading}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-white mb-1">
-                  Género
+                  Edad
                 </label>
                 <select
-                  value={gender}
-                  onChange={(e) => setGender(e.target.value)}
-                  className="h-[48px] w-full px-3 text-gray-700 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] cursor-pointer"
-                  disabled={loading}
                   required
+                  value={age}
+                  onChange={(e) =>
+                    setAge(e.target.value === "" ? "" : Number(e.target.value))
+                  }
+                  className="h-[48px] w-full px-3 text-gray-600 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] cursor-pointer appearance-none"
+                  disabled={loading}
                 >
-                  <option value="">Selecciona...</option>
-                  <option value="male">Masculino</option>
-                  <option value="female">Femenino</option>
-                  <option value="other">Otro</option>
+                  <option value="" disabled>
+                    Selecciona tu edad
+                  </option>
+                  {Array.from({ length: 59 }, (_, i) => i + 12).map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
                 </select>
               </div>
               <button
                 type="submit"
-                disabled={
-                  loading || !firstName || !lastName || !birthDate || !gender
-                }
-                className="w-full bg-black hover:bg-stone-950 text-white py-3.5 rounded-full font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-2 active:scale-95"
+                disabled={loading || !firstName || age === ""}
+                className="w-full bg-black hover:bg-stone-950 text-white py-3 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-6"
               >
                 {loading ? "Guardando..." : "Continuar"}
               </button>
