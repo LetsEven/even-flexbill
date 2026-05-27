@@ -20,6 +20,9 @@ import {
   UserCircle,
   ReceiptText,
   RefreshCw,
+  X,
+  Utensils,
+  Loader2,
 } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useTableNavigation } from "@/app/hooks/useTableNavigation";
@@ -37,6 +40,34 @@ const RestaurantClosedModal = lazy(
 );
 
 // Pure functions — defined outside to avoid re-creation on every render
+function getStatusColor(status: string) {
+  switch (status) {
+    case "preparing":
+      return "bg-yellow-100 text-yellow-800 border-yellow-300";
+    case "ready":
+      return "bg-orange-100 text-orange-800 border-orange-300";
+    case "delivered":
+      return "bg-green-100 text-green-800 border-green-300";
+    default:
+      return "bg-gray-100 text-gray-800 border-gray-300";
+  }
+}
+
+function getStatusText(status: string) {
+  switch (status) {
+    case "pending":
+      return "Pendiente";
+    case "preparing":
+      return "Preparando";
+    case "ready":
+      return "Listo";
+    case "delivered":
+      return "Entregado";
+    default:
+      return status;
+  }
+}
+
 function lockScroll() {
   const scrollY = window.scrollY;
   document.body.style.position = "fixed";
@@ -103,16 +134,18 @@ function MenuView({ tableNumber }: MenuViewProps) {
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [showClosedModal, setShowClosedModal] = useState(false);
   const [showReorderModal, setShowReorderModal] = useState(false);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const stickyTriggerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (showPepperChat || showSettingsModal || showReorderModal) {
+    if (showPepperChat || showSettingsModal || showReorderModal || isStatusModalOpen) {
       lockScroll();
     } else {
       unlockScroll();
     }
     return unlockScroll;
-  }, [showPepperChat, showSettingsModal, showReorderModal]);
+  }, [showPepperChat, showSettingsModal, showReorderModal, isStatusModalOpen]);
 
   // Precargar chunks lazy después de que la página ya es interactiva
   useEffect(() => {
@@ -143,8 +176,14 @@ function MenuView({ tableNumber }: MenuViewProps) {
   const { profile, isAuthenticated } = useAuth();
   const { navigateWithTable } = useTableNavigation();
   const { state: cartState } = useCart();
-  const { state: tableState } = useTable();
+  const { state: tableState, loadDishOrders } = useTable();
   const { restaurant, menu, loading, error } = useRestaurant();
+
+  const handleRefreshOrder = async () => {
+    setIsRefreshing(true);
+    await loadDishOrders();
+    setIsRefreshing(false);
+  };
 
   // Mostrar barra sticky al hacer scroll past el trigger
   useEffect(() => {
@@ -302,13 +341,21 @@ function MenuView({ tableNumber }: MenuViewProps) {
               </h3>
               {Array.isArray(tableState.dishOrders) &&
                 tableState.dishOrders.length > 0 && (
-                  <button
-                    onClick={() => setShowReorderModal(true)}
-                    className="mt-3 bg-[#eab3f4] text-white border border-[#8e8e8e] rounded-full px-3 md:px-4 lg:px-5 py-1 md:py-1.5 text-sm md:text-base lg:text-lg font-medium flex items-center gap-1.5 active:scale-90 transition-all"
-                  >
-                    Reordenar
-                    <RefreshCw className="size-4" />
-                  </button>
+                  <div className="mt-3 flex flex-wrap gap-2 justify-center">
+                    <button
+                      onClick={() => setIsStatusModalOpen(true)}
+                      className="bg-[#f9f9f9] border border-[#8e8e8e] rounded-full px-3 md:px-4 lg:px-5 py-1 md:py-1.5 text-sm md:text-base lg:text-lg font-medium text-black active:scale-90 transition-all"
+                    >
+                      Estado del pedido
+                    </button>
+                    <button
+                      onClick={() => setShowReorderModal(true)}
+                      className="bg-[#eab3f4] text-white border border-[#8e8e8e] rounded-full px-3 md:px-4 lg:px-5 py-1 md:py-1.5 text-sm md:text-base lg:text-lg font-medium flex items-center gap-1.5 active:scale-90 transition-all"
+                    >
+                      Reordenar
+                      <RefreshCw className="size-4" />
+                    </button>
+                  </div>
                 )}
             </div>
           </div>
@@ -553,6 +600,133 @@ function MenuView({ tableNumber }: MenuViewProps) {
             </Suspense>
           </div>
         </>
+      )}
+
+      {/* Status Modal */}
+      {isStatusModalOpen && (
+        <div
+          className="fixed inset-0 bg-black/25 backdrop-blur-xs z-[999] flex items-center justify-center"
+          onClick={() => setIsStatusModalOpen(false)}
+        >
+          <div
+            className="bg-[#173E44]/80 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] w-full mx-4 md:mx-12 lg:mx-28 rounded-4xl z-[999] max-h-[85vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="shrink-0">
+              <div className="w-full flex justify-end">
+                <button
+                  onClick={() => setIsStatusModalOpen(false)}
+                  className="p-2 md:p-3 lg:p-4 hover:bg-white/10 rounded-lg md:rounded-xl transition-colors mt-3 md:mt-4 lg:mt-5 mr-3 md:mr-4 lg:mr-5"
+                >
+                  <X className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 text-white" />
+                </button>
+              </div>
+              <div className="px-6 md:px-8 lg:px-10 flex items-center justify-center mb-4 md:mb-5 lg:mb-6">
+                <div className="flex flex-col justify-center items-center gap-3 md:gap-4 lg:gap-5">
+                  {restaurant?.logo_url ? (
+                    <img
+                      src={restaurant.logo_url}
+                      alt={restaurant.name}
+                      className="size-20 md:size-24 lg:size-28 object-cover rounded-lg md:rounded-xl"
+                    />
+                  ) : (
+                    <Utensils className="size-20 md:size-24 lg:size-28 text-white" />
+                  )}
+                  <div className="flex flex-col items-center justify-center">
+                    <h2 className="text-xl md:text-2xl lg:text-3xl text-white font-bold">
+                      Estado del pedido
+                    </h2>
+                    <p className="text-sm md:text-base lg:text-lg text-white/80">
+                      Mesa {tableNumber}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="px-6 md:px-8 lg:px-10 border-t border-white/20 pt-4 md:pt-5 lg:pt-6">
+                <div className="flex justify-between items-center">
+                  <h3 className="font-medium text-xl md:text-2xl lg:text-3xl text-white">
+                    Items ordenados
+                  </h3>
+                  <button
+                    onClick={handleRefreshOrder}
+                    disabled={isRefreshing}
+                    className="rounded-full hover:bg-white/10 p-1 md:p-1.5 lg:p-2 transition-colors disabled:opacity-50"
+                  >
+                    <RefreshCw
+                      className={`size-5 md:size-6 lg:size-7 text-white ${isRefreshing ? "animate-spin" : ""}`}
+                    />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Scrollable items */}
+            <div className="flex-1 overflow-y-auto px-6 md:px-8 lg:px-10 pt-4 md:pt-5 lg:pt-6 pb-6 md:pb-8 lg:pb-10">
+              {isRefreshing ? (
+                <div className="flex justify-center items-center py-12 md:py-16 lg:py-20">
+                  <Loader2 className="size-8 md:size-10 lg:size-12 animate-spin text-white" />
+                </div>
+              ) : tableState.dishOrders.length > 0 ? (
+                <div className="space-y-3 md:space-y-4 lg:space-y-5">
+                  {tableState.dishOrders.map((dish, index) => (
+                    <div
+                      key={dish.dish_order_id || index}
+                      className="flex items-start gap-3 md:gap-4 lg:gap-5 bg-white/5 rounded-xl md:rounded-2xl p-3 md:p-4 lg:p-5 border border-white/10"
+                    >
+                      <div className="shrink-0">
+                        <div className="size-16 md:size-20 lg:size-24 bg-gray-300 rounded-sm flex items-center justify-center overflow-hidden">
+                          {dish.images && dish.images.length > 0 && dish.images[0] ? (
+                            <img
+                              src={dish.images[0]}
+                              alt={dish.item}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <img
+                              src="/logos/logo-short-green.webp"
+                              alt="Logo Even"
+                              className="size-12 md:size-14 lg:size-16 object-contain"
+                            />
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base md:text-lg lg:text-xl text-white font-medium capitalize">
+                          {dish.item}
+                        </h3>
+                        <p className="text-xs md:text-sm lg:text-base text-white/50 mt-0.5">
+                          {dish.guest_name}
+                        </p>
+                        <div className="mt-1 md:mt-1.5 lg:mt-2">
+                          <span
+                            className={`inline-block px-2 md:px-3 lg:px-4 py-0.5 md:py-1 lg:py-1.5 text-xs md:text-sm lg:text-base font-medium rounded-full border ${getStatusColor(dish.status)}`}
+                          >
+                            {getStatusText(dish.status)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right flex flex-col items-end">
+                        <p className="text-xs md:text-sm lg:text-base text-white/60">
+                          Cant: {dish.quantity}
+                        </p>
+                        <p className="text-base md:text-lg lg:text-xl text-white font-medium">
+                          ${(Number(dish.price) * dish.quantity).toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 md:py-10 lg:py-12">
+                  <p className="text-white/70 text-base md:text-lg lg:text-xl">
+                    No se encontró información de la orden
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Reorder Modal */}
