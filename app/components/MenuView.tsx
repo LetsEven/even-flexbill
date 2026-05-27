@@ -139,7 +139,12 @@ function MenuView({ tableNumber }: MenuViewProps) {
   const stickyTriggerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (showPepperChat || showSettingsModal || showReorderModal || isStatusModalOpen) {
+    if (
+      showPepperChat ||
+      showSettingsModal ||
+      showReorderModal ||
+      isStatusModalOpen
+    ) {
       lockScroll();
     } else {
       unlockScroll();
@@ -676,7 +681,9 @@ function MenuView({ tableNumber }: MenuViewProps) {
                     >
                       <div className="shrink-0">
                         <div className="size-16 md:size-20 lg:size-24 bg-gray-300 rounded-sm flex items-center justify-center overflow-hidden">
-                          {dish.images && dish.images.length > 0 && dish.images[0] ? (
+                          {dish.images &&
+                          dish.images.length > 0 &&
+                          dish.images[0] ? (
                             <img
                               src={dish.images[0]}
                               alt={dish.item}
