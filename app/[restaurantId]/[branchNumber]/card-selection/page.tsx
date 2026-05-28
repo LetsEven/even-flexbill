@@ -108,7 +108,7 @@ export default function CardSelectionPage() {
 
   useEcartPay();
 
-  const isDev = process.env.NODE_ENV === "development";
+  //const isDev = process.env.NODE_ENV === "development";
 
   // Determinar el nombre a usar: prioridad a userName de URL, luego state.currentUserName, luego nombre de usuario autenticado
   const effectiveName =
@@ -280,9 +280,10 @@ export default function CardSelectionPage() {
 
   // Set default payment method when payment methods are loaded (only once)
   useEffect(() => {
-    const visibleMethods = allPaymentMethods.filter(
+    const visibleMethods = allPaymentMethods;
+    /*.filter(
       (pm) => isDev || pm.id !== "system-default-card",
-    );
+    );*/
     if (!selectedPaymentMethodId && visibleMethods.length > 0) {
       const defaultMethod =
         visibleMethods.find((pm) => pm.isDefault) || visibleMethods[0];
@@ -1187,7 +1188,7 @@ export default function CardSelectionPage() {
                       Métodos de pago
                     </h3>
                     {allPaymentMethods
-                      .filter((pm) => isDev || pm.id !== "system-default-card")
+                      //.filter((pm) => isDev || pm.id !== "system-default-card")
                       .map((method) => (
                         <div
                           key={method.id}
