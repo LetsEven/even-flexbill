@@ -592,7 +592,7 @@ function MenuView({ tableNumber }: MenuViewProps) {
               <div className="w-10 h-1 rounded-full bg-white/30" />
             </div>
             <Suspense fallback={null}>
-              {isAuthenticated ? (
+              {isAuthenticated && profile?.firstName ? (
                 <div className="flex-1 min-h-0">
                   <DashboardView
                     onClose={closeSettingsModal}
