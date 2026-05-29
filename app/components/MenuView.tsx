@@ -702,7 +702,7 @@ function MenuView({ tableNumber }: MenuViewProps) {
                         <h3 className="text-base md:text-lg lg:text-xl text-white font-medium capitalize">
                           {dish.item}
                         </h3>
-                        <p className="text-xs md:text-sm lg:text-base text-white/50 mt-0.5">
+                        <p className="text-xs md:text-sm lg:text-base font-medium text-white/80 uppercase">
                           {dish.guest_name}
                         </p>
                         <div className="mt-1 md:mt-1.5 lg:mt-2">
