@@ -6,10 +6,20 @@ import Loader from "@/app/components/UI/Loader";
 import ValidationError from "@/app/components/ValidationError";
 import ErrorScreen from "@/app/components/ErrorScreen";
 import { useValidateAccess } from "@/app/hooks/useValidateAccess";
+import { useEffect } from "react";
 
 export default function RestaurantMenuPage() {
   const { validationError, tableNumber } = useValidateAccess();
   const { restaurant, loading, error } = useRestaurant();
+
+  useEffect(() => {
+    if (restaurant?.name) {
+      document.title = restaurant.name + " | Flex Bill";
+      return () => {
+        document.title = "Even Flex Bill";
+      };
+    }
+  }, [restaurant?.name]);
 
   // Mostrar error de validación
   if (validationError) {
