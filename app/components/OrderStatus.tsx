@@ -289,7 +289,7 @@ export default function OrderStatus() {
                                       </div>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                      <h3 className="text-sm md:text-base lg:text-lg text-[#8e8e8e]">
+                                      <h3 className="text-xs md:text-sm lg:text-base text-black/60 font-medium">
                                         {dish.guest_name.toUpperCase()}
                                       </h3>
                                       <h4 className="text-base md:text-lg lg:text-xl text-black capitalize">
