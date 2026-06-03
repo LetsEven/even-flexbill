@@ -27,7 +27,7 @@ export default function HighDemandBanner({ onDismiss }: Props) {
 
         <div className="flex flex-col items-center px-8 pt-10 pb-8 gap-5">
           {/* Logo */}
-          <img src="/logo-short-white.webp" alt="Even" className="size-16" />
+          <img src="/iso-1-white.webp" alt="Even" className="size-16" />
 
           {/* Text */}
           <div className="text-center space-y-2">
