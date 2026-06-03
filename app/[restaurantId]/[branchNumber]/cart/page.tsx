@@ -19,10 +19,15 @@ export default function CartPage() {
 
   useEffect(() => {
     if (!restaurantId || !branchNumber) return;
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-    fetch(`${API_BASE}/restaurants/${restaurantId}/${branchNumber}/order-flow-status`)
+    const API_BASE =
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+    fetch(
+      `${API_BASE}/restaurants/${restaurantId}/${branchNumber}/order-flow-status`,
+    )
       .then((r) => r.json())
-      .then(({ data }) => { if (data?.is_high_demand) setShowHighDemandBanner(true); })
+      .then(({ data }) => {
+        if (data?.is_flexbill_high_demand) setShowHighDemandBanner(true);
+      })
       .catch(() => {});
   }, [restaurantId, branchNumber]);
 

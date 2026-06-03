@@ -50,14 +50,9 @@ class AuthService {
         console.warn("⚠️ Network error during token refresh, keeping session");
         return null;
       } else {
-        await this.logout();
+        console.warn("⚠️ Token refresh rejected, clearing local session");
         this.clearAuthToken();
         this.clearAllSessionData();
-
-        if (typeof window !== "undefined") {
-          window.location.href = "/";
-        }
-
         return null;
       }
     } catch (error) {
