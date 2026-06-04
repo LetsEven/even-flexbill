@@ -115,6 +115,7 @@ function MenuItem({ item, onRestaurantClosed }: MenuItemProps) {
           navigateWithTable(`/dish/${adaptedItem.id}`);
         }
       } else {
+        setIsPulsing(true);
         navigateWithTable(`/dish/${adaptedItem.id}`);
       }
       return;
