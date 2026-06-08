@@ -120,7 +120,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const headersList = await headers();
+  const nonce = headersList.get("x-nonce") ?? undefined;
+  void nonce;
 
   return (
     <html lang="es">
