@@ -313,13 +313,13 @@ export default function CardSelectionPage() {
 
     const ApplePaySession = (window as any).ApplePaySession;
     if (!ApplePaySession || !ApplePaySession.canMakePayments?.()) {
-      // Dispositivo/navegador no soporta Apple Pay — mantener oculto
+      setApplePayUnavailable(true);
       return;
     }
 
     // Dispositivo compatible y proveedor es eCartPay — cargar SDK
     setApplePayUnavailable(false);
-    const src = "https://ecartpay.com/sdk/pay.js";
+    const src = "https://ecartpay.com/sdk/pay.js?v=2";
     if (!document.querySelector(`script[src="${src}"]`)) {
       const script = document.createElement("script");
       script.src = src;
@@ -341,7 +341,7 @@ export default function CardSelectionPage() {
       return;
     }
 
-    const src = "https://ecartpay.com/sdk/pay.js";
+    const src = "https://ecartpay.com/sdk/pay.js?v=2";
     if (!document.querySelector(`script[src="${src}"]`)) {
       const script = document.createElement("script");
       script.src = src;
