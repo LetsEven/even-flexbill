@@ -263,7 +263,9 @@ export default function CardSelectionPage() {
         quantity: 1,
         extraPrice: 0,
       });
-    const commission = Math.round(((evenCommissionClient || 0) + (ivaEvenClient || 0)) * 100) / 100;
+    const commission =
+      Math.round(((evenCommissionClient || 0) + (ivaEvenClient || 0)) * 100) /
+      100;
     if (commission > 0)
       items.push({
         name: "Cargo por servicio",
@@ -313,7 +315,6 @@ export default function CardSelectionPage() {
 
     const ApplePaySession = (window as any).ApplePaySession;
     if (!ApplePaySession || !ApplePaySession.canMakePayments?.()) {
-      setApplePayUnavailable(true);
       return;
     }
 
@@ -574,7 +575,14 @@ export default function CardSelectionPage() {
         const applePayItems =
           paymentType === "user-items" || paymentType === "select-items"
             ? getEcartPayItems()
-            : [{ name: "Consumo", price: baseAmount, quantity: 1, extraPrice: 0 }];
+            : [
+                {
+                  name: "Consumo",
+                  price: baseAmount,
+                  quantity: 1,
+                  extraPrice: 0,
+                },
+              ];
         const orderResult = await paymentService.createApplePayOrder({
           amount: totalAmountCharged,
           currency: "MXN",
@@ -656,7 +664,14 @@ export default function CardSelectionPage() {
         const googlePayItems =
           paymentType === "user-items" || paymentType === "select-items"
             ? getEcartPayItems()
-            : [{ name: "Consumo", price: baseAmount, quantity: 1, extraPrice: 0 }];
+            : [
+                {
+                  name: "Consumo",
+                  price: baseAmount,
+                  quantity: 1,
+                  extraPrice: 0,
+                },
+              ];
         const orderResult = await paymentService.createGooglePayOrder({
           amount: totalAmountCharged,
           currency: "MXN",
