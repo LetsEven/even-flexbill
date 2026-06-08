@@ -571,6 +571,10 @@ export default function CardSelectionPage() {
 
     (async () => {
       try {
+        const applePayItems =
+          paymentType === "user-items" || paymentType === "select-items"
+            ? getEcartPayItems()
+            : [{ name: "Consumo", price: baseAmount, quantity: 1, extraPrice: 0 }];
         const orderResult = await paymentService.createApplePayOrder({
           amount: totalAmountCharged,
           currency: "MXN",
@@ -578,7 +582,7 @@ export default function CardSelectionPage() {
           restaurantId: restaurantId?.toString(),
           baseAmount,
           tipAmount,
-          items: getEcartPayItems(),
+          items: applePayItems,
         });
 
         const appleOrderId =
@@ -649,6 +653,10 @@ export default function CardSelectionPage() {
 
     (async () => {
       try {
+        const googlePayItems =
+          paymentType === "user-items" || paymentType === "select-items"
+            ? getEcartPayItems()
+            : [{ name: "Consumo", price: baseAmount, quantity: 1, extraPrice: 0 }];
         const orderResult = await paymentService.createGooglePayOrder({
           amount: totalAmountCharged,
           currency: "MXN",
@@ -656,7 +664,7 @@ export default function CardSelectionPage() {
           restaurantId: restaurantId?.toString(),
           baseAmount,
           tipAmount,
-          items: getEcartPayItems(),
+          items: googlePayItems,
         });
 
         const googleOrderId =
