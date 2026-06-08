@@ -263,7 +263,7 @@ export default function CardSelectionPage() {
         quantity: 1,
         extraPrice: 0,
       });
-    const commission = (evenCommissionClient || 0) + (ivaEvenClient || 0);
+    const commission = Math.round(((evenCommissionClient || 0) + (ivaEvenClient || 0)) * 100) / 100;
     if (commission > 0)
       items.push({
         name: "Cargo por servicio",
