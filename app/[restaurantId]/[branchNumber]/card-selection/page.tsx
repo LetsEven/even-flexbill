@@ -612,7 +612,7 @@ export default function CardSelectionPage() {
         applePaySDK.on("ready", () => {
           setTimeout(() => setApplePayReady(true), 2800);
         });
-        applePaySDK.on("unavailable", () => setApplePayUnavailable(true));
+        applePaySDK.on("unavailable", () => { alert("AP unavailable"); setApplePayUnavailable(true); });
         applePaySDK.on("cancel", () => setIsApplePayProcessing(false));
         applePaySDK.on("error", (err: any) => {
           console.error("❌ Apple Pay error:", err);
