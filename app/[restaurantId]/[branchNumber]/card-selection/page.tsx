@@ -616,6 +616,7 @@ export default function CardSelectionPage() {
         applePaySDK.on("cancel", () => setIsApplePayProcessing(false));
         applePaySDK.on("error", (err: any) => {
           console.error("❌ Apple Pay error:", err);
+          alert("AP error: " + JSON.stringify(err?.detail ?? err?.message ?? err));
           setIsApplePayProcessing(false);
           setApplePayUnavailable(true);
         });
