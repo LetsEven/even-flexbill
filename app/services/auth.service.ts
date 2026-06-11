@@ -3,6 +3,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 export interface AuthResponse {
   success: boolean;
   message?: string;
+  /** HTTP status de la respuesta; ausente en errores de red */
+  status?: number;
   data?: {
     user: {
       id: string;
@@ -46,13 +48,22 @@ class AuthService {
       const result = await this.refreshToken();
       if (result.success && result.data?.session?.access_token) {
         return result.data.session.access_token;
-      } else if (result.error === "Error al refrescar el token") {
-        console.warn("⚠️ Network error during token refresh, keeping session");
-        return null;
-      } else {
-        console.warn("⚠️ Token refresh rejected, clearing local session");
+      } else if (result.status === 401) {
+        // El servidor rechazó el refresh token (inválido/revocado) — única
+        // situación en la que se limpia la sesión local
+        console.warn(
+          "⚠️ Token refresh rejected by server, clearing local session",
+        );
         this.clearAuthToken();
         this.clearAllSessionData();
+        return null;
+      } else {
+        // Error de red o del servidor (5xx) — los tokens pueden seguir siendo
+        // válidos, conservar la sesión y reintentar más tarde
+        console.warn(
+          "⚠️ Transient refresh failure, keeping session:",
+          result.error,
+        );
         return null;
       }
     } catch (error) {
@@ -371,7 +382,7 @@ class AuthService {
       }
 
       this.isRefreshing = false;
-      return data;
+      return { ...data, status: response.status };
     } catch (error) {
       console.error("Error refreshing token:", error);
       this.isRefreshing = false;
