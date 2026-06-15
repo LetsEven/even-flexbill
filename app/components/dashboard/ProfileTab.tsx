@@ -160,13 +160,15 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
 
   const handleLogout = async () => {
     try {
-      // Use context logout which will update the auth state
-      await contextLogout();
       setIsLogoutModalOpen(false);
-      // Redirect to menu with table navigation
       if (onLogout) {
+        // El padre (modal) cierra con animación y limpia la sesión después,
+        // para evitar el flash de AuthView durante la animación de cierre.
         onLogout();
       } else {
+        // Use context logout which will update the auth state
+        await contextLogout();
+        // Redirect to menu with table navigation
         navigateWithTable("/menu");
       }
     } catch (error) {

@@ -178,8 +178,20 @@ function MenuView({ tableNumber }: MenuViewProps) {
     }, 380);
   };
 
-  const { profile, isAuthenticated } = useAuth();
+  const { profile, isAuthenticated, logout } = useAuth();
   const { navigateWithTable } = useTableNavigation();
+
+  // Logout desde el modal: primero cerrar con animación, luego limpiar la
+  // sesión. Si se limpia antes, el modal re-renderiza su contenido como
+  // AuthView/"Acceso denegado" durante la animación y se ve un flash.
+  const handleSettingsLogout = () => {
+    setIsSettingsClosing(true);
+    setTimeout(() => {
+      setShowSettingsModal(false);
+      setIsSettingsClosing(false);
+      logout();
+    }, 380);
+  };
   const { state: cartState } = useCart();
   const { state: tableState, loadDishOrders } = useTable();
   const { restaurant, menu, loading, error } = useRestaurant();
@@ -596,7 +608,7 @@ function MenuView({ tableNumber }: MenuViewProps) {
                 <div className="flex-1 min-h-0">
                   <DashboardView
                     onClose={closeSettingsModal}
-                    onLogout={closeSettingsModal}
+                    onLogout={handleSettingsLogout}
                   />
                 </div>
               ) : (
