@@ -341,17 +341,11 @@ export { apiService as tableApi };
 
 // Legacy compatibility - redirect old tableApi usage to new apiService
 export const legacyTableApi = {
-  // Deprecated: use apiService.getTableSummary(restaurantId, tableNumber) instead
-  getTableOrders: (tableNumber: number) => {
-    console.warn(
-      "getTableOrders without restaurantId is deprecated. Use getTableOrders(restaurantId, tableNumber) instead."
+  // Deprecated: use apiService.getTableOrders(restaurantId, branchNumber, tableNumber) instead
+  getTableOrders: (_tableNumber: number) => {
+    throw new Error(
+      "legacyTableApi.getTableOrders is deprecated. Use apiService.getTableOrders(restaurantId, branchNumber, tableNumber) instead."
     );
-    // Get restaurantId from apiService
-    const restaurantId = apiService.getCurrentRestaurantId();
-    if (!restaurantId) {
-      throw new Error("Restaurant ID not set. Please set restaurant ID first.");
-    }
-    return apiService.getTableOrders(restaurantId, tableNumber.toString());
   },
 
   // Deprecated: use apiService.createDishOrder() instead
