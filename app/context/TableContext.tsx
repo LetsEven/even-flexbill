@@ -730,32 +730,34 @@ export function TableProvider({ children }: { children: ReactNode }) {
         localStorage.setItem("even-guest-name", finalUserName);
       }
 
-      // Crear órdenes de platillos con la cantidad correcta
-      for (const item of itemsToOrder) {
-        const response = await tableService.createDishOrder(
-          restaurantId?.toString() || "1", // restaurantId del contexto
-          finalBranchNumber, // branchNumber del contexto o parámetro
-          state.tableNumber,
-          userId, // userId de Clerk si está autenticado, null si es invitado
-          displayName, // Nombre real o guest name
-          item.name, // item
-          item.quantity, // quantity real del carrito
-          item.price, // price
-          guestId, // guestId solo si es invitado
-          item.images,
-          item.customFields, // custom fields seleccionados
-          item.extraPrice, // precio extra por custom fields
-          item.id, // menu_item_id
-          orderNotes, // notas de la orden
-          item.specialInstructions || null, // instrucciones especiales del platillo
-        );
+      // Crear todas las órdenes del carrito en UNA sola petición.
+      // El backend emite un único print job → un ticket por impresora/categoría
+      // en lugar de un ticket por item.
+      const response = await tableService.createMultipleDishOrders(
+        restaurantId?.toString() || "1", // restaurantId del contexto
+        finalBranchNumber, // branchNumber del contexto o parámetro
+        state.tableNumber,
+        userId, // userId si está autenticado, null si es invitado
+        displayName, // Nombre real o guest name
+        itemsToOrder.map((item) => ({
+          item: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          images: item.images,
+          customFields: item.customFields,
+          extraPrice: item.extraPrice,
+          menuItemId: item.id,
+          specialInstructions: item.specialInstructions || null,
+        })),
+        guestId, // guestId solo si es invitado
+        orderNotes, // notas de la orden
+      );
 
-        if (!response.success) {
-          console.error("❌ Error creando orden:", response.error);
-          throw new Error(
-            response.error?.message || "Failed to create dish order",
-          );
-        }
+      if (!response.success) {
+        console.error("❌ Error creando orden:", response.error);
+        throw new Error(
+          response.error?.message || "Failed to create dish order",
+        );
       }
 
       // Actualizar el nombre del usuario en el estado si se pasó como parámetro

@@ -254,6 +254,53 @@ async function createDishOrder(
 }
 
 /**
+ * Create multiple dish orders for a table in a single request (cart submit).
+ * Backend emits ONE print job for all items, so the kitchen gets one ticket
+ * per printer/category instead of one ticket per item.
+ */
+async function createMultipleDishOrders(
+  restaurantId: string,
+  branchNumber: string,
+  tableNumber: string,
+  userId: string | null,
+  guestName: string,
+  items: Array<{
+    item: string;
+    quantity: number;
+    price: number;
+    images?: string[];
+    customFields?: Array<{
+      fieldId: string;
+      fieldName: string;
+      selectedOptions: Array<{
+        optionId: string;
+        optionName: string;
+        price: number;
+      }>;
+    }> | null;
+    extraPrice?: number;
+    menuItemId?: number | null;
+    specialInstructions?: string | null;
+  }>,
+  guestId?: string | null,
+  orderNotes?: string | null,
+): Promise<ApiResponse<any>> {
+  return makeRequest(
+    `/restaurants/${restaurantId}/branches/${branchNumber}/tables/${tableNumber}/dishes/bulk`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        userId,
+        guestName,
+        guestId,
+        orderNotes: orderNotes || null,
+        items,
+      }),
+    },
+  );
+}
+
+/**
  * Update dish status (for kitchen)
  */
 async function updateDishStatus(
@@ -280,5 +327,6 @@ export const tableService = {
 
   // Order operations
   createDishOrder,
+  createMultipleDishOrders,
   updateDishStatus,
 };
