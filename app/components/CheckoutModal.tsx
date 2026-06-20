@@ -237,7 +237,7 @@ export default function CheckoutModal({
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="John Doe"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-even-grass focus:border-transparent"
               />
             </div>
 
@@ -251,7 +251,7 @@ export default function CheckoutModal({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="john@example.com"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-even-grass focus:border-transparent"
               />
             </div>
 
@@ -266,7 +266,7 @@ export default function CheckoutModal({
                 onChange={handleCardNumberChange}
                 placeholder="1234 5678 9012 3456"
                 maxLength={19}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-even-grass focus:border-transparent"
               />
             </div>
 
@@ -282,7 +282,7 @@ export default function CheckoutModal({
                   onChange={handleExpDateChange}
                   placeholder="MM/YY"
                   maxLength={5}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-even-grass focus:border-transparent"
                 />
               </div>
               <div>
@@ -297,7 +297,7 @@ export default function CheckoutModal({
                   }
                   placeholder="123"
                   maxLength={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-even-grass focus:border-transparent"
                 />
               </div>
             </div>
@@ -311,7 +311,7 @@ export default function CheckoutModal({
                 <select
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-even-grass focus:border-transparent"
                 >
                   <option value="Mexico">🇲🇽 Mexico</option>
                   <option value="USA">🇺🇸 USA</option>
@@ -328,7 +328,7 @@ export default function CheckoutModal({
                   value={postalCode}
                   onChange={(e) => setPostalCode(e.target.value)}
                   placeholder="12345"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-even-grass focus:border-transparent"
                 />
               </div>
             </div>
@@ -348,7 +348,7 @@ export default function CheckoutModal({
             <button
               onClick={handlePayment}
               disabled={isProcessing}
-              className="flex-1 py-3 px-4 bg-teal-700 text-white rounded-md font-medium hover:bg-teal-800 transition-colors disabled:opacity-50"
+              className="flex-1 py-3 px-4 bg-even-grass text-even-evergreen rounded-md font-medium hover:bg-even-grass/80 transition-colors disabled:opacity-50"
             >
               {isProcessing ? "Processing..." : `Pay $${amount.toFixed(2)}`}
             </button>

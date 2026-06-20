@@ -205,7 +205,7 @@ function MenuItem({ item, onRestaurantClosed }: MenuItemProps) {
                 />
               ) : (
                 <img
-                  src="/logo-short-green.webp"
+                  src="/even/even-asterisk-evergreen.svg"
                   alt="Logo Even"
                   loading="lazy"
                   className={`size-18 md:size-20 lg:size-22 object-contain`}
@@ -235,7 +235,7 @@ function MenuItem({ item, onRestaurantClosed }: MenuItemProps) {
                 {adaptedItem.name}
               </h3>
               <div
-                className={`flex gap-1.5 md:gap-2 px-3 md:px-4 lg:px-5 py-0.5 md:py-1 h-fit rounded-full border items-center justify-center border-[#8e8e8e]/50 text-black transition-all ${isPulsing ? "bg-[#eab3f4]/50" : "bg-[#f9f9f9]"}`}
+                className={`flex gap-1.5 md:gap-2 px-3 md:px-4 lg:px-5 py-0.5 md:py-1 h-fit rounded-full border items-center justify-center border-stroke/50 text-black transition-all ${isPulsing ? "bg-even-grass/50" : "bg-surface"}`}
                 onClick={(e) => e.stopPropagation()}
               >
                 <Minus
@@ -260,14 +260,14 @@ function MenuItem({ item, onRestaurantClosed }: MenuItemProps) {
                 {adaptedItem.features.map((feature, index) => (
                   <div
                     key={index}
-                    className="text-sm md:text-base lg:text-lg text-black font-medium border border-[#bfbfbf]/50 rounded-3xl px-3 md:px-4 py-1 md:py-1.5 shadow-sm"
+                    className="text-sm md:text-base lg:text-lg text-black font-medium border border-stroke-soft/50 rounded-3xl px-3 md:px-4 py-1 md:py-1.5 shadow-sm"
                   >
                     {feature}
                   </div>
                 ))}
               </div>
             )}
-            <p className="text-base md:text-lg lg:text-xl line-clamp-3 leading-4 md:leading-5 lg:leading-6 bg-gradient-to-b from-black to-black/30 bg-clip-text text-transparent">
+            <p className="text-base md:text-lg lg:text-xl line-clamp-3 leading-4 md:leading-5 lg:leading-6 bg-linear-to-b from-black to-black/30 bg-clip-text mt-1.5 md:mt-2.5">
               {adaptedItem.description}
             </p>
             <div className="flex items-center justify-between mt-2 md:mt-3">

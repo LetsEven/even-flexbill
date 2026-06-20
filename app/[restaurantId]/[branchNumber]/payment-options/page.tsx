@@ -299,14 +299,14 @@ export default function PaymentOptionsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-dvh bg-gradient-to-br from-[#0a8b9b] to-[#153f43] flex flex-col">
+      <div className="min-h-dvh brand-evergreen flex flex-col">
         <MenuHeaderBack
           restaurant={restaurantData}
           tableNumber={state.tableNumber}
         />
 
         <div className="px-4 md:px-6 lg:px-8 w-full flex-1 flex flex-col">
-          <div className="left-4 right-4 bg-gradient-to-tl from-[#0a8b9b] to-[#1d727e] rounded-t-4xl translate-y-7 z-0">
+          <div className="left-4 right-4 bg-even-evergreen rounded-t-4xl translate-y-7 z-0">
             <div className="py-6 md:py-8 lg:py-10 px-8 md:px-10 lg:px-12 flex flex-col justify-center">
               <h1 className="font-medium text-white text-3xl md:text-4xl lg:text-5xl leading-7 md:leading-9 lg:leading-tight mt-2 md:mt-3 mb-6 md:mb-8">
                 Elige cómo quieres pagar la cuenta
@@ -322,7 +322,7 @@ export default function PaymentOptionsPage() {
                   {[1, 2, 3, 4].map((item) => (
                     <div
                       key={item}
-                      className="w-full bg-white border-b border-[#8e8e8e] animate-pulse"
+                      className="w-full bg-white border-b border-stroke animate-pulse"
                     >
                       <div className="flex items-center gap-3 md:gap-4 lg:gap-5 py-3 md:py-4 lg:py-5 px-4 md:px-5 lg:px-6">
                         <div className="size-16 md:size-20 lg:size-24 rounded-sm md:rounded-md bg-gray-200"></div>
@@ -358,14 +358,14 @@ export default function PaymentOptionsPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-gradient-to-br from-[#0a8b9b] to-[#153f43] flex flex-col">
+    <div className="min-h-dvh brand-evergreen flex flex-col">
       <MenuHeaderBack
         restaurant={restaurantData}
         tableNumber={state.tableNumber}
       />
 
       <div className="px-4 md:px-6 lg:px-8 w-full flex-1 flex flex-col">
-        <div className="left-4 right-4 bg-gradient-to-tl from-[#0a8b9b] to-[#1d727e] rounded-t-4xl translate-y-7 z-0">
+        <div className="left-4 right-4 bg-even-evergreen rounded-t-4xl translate-y-7 z-0">
           <div className="py-6 md:py-8 lg:py-10 px-8 md:px-10 lg:px-12 flex flex-col justify-center">
             <h1 className="font-medium text-white text-3xl md:text-4xl lg:text-5xl leading-7 md:leading-9 lg:leading-tight mt-2 md:mt-3 mb-6 md:mb-8">
               Elige cómo quieres pagar la cuenta
@@ -383,7 +383,7 @@ export default function PaymentOptionsPage() {
                 {unpaidAmount > 0 && (
                   <button
                     onClick={handlePayFullBill}
-                    className="w-full bg-white cursor-pointer border-b border-[#8e8e8e] active:bg-[#0a8b9b]/10 transition-all duration-300"
+                    className="w-full bg-white cursor-pointer border-b border-stroke active:bg-even-grass/10 transition-all duration-300"
                   >
                     <div className="flex items-center gap-3 md:gap-4 lg:gap-5 py-3 md:py-4 lg:py-5 px-4 md:px-5 lg:px-6">
                       <div className="size-16 md:size-20 lg:size-24 rounded-sm md:rounded-md border border-black flex items-center justify-center">
@@ -408,7 +408,7 @@ export default function PaymentOptionsPage() {
                 {unpaidDishes.length > 0 && (
                   <button
                     onClick={handleSelectItems}
-                    className="w-full bg-white cursor-pointer border-b border-[#8e8e8e] active:bg-[#0a8b9b]/10 transition-all duration-300"
+                    className="w-full bg-white cursor-pointer border-b border-stroke active:bg-even-grass/10 transition-all duration-300"
                   >
                     <div className="flex items-center gap-3 md:gap-4 lg:gap-5 py-3 md:py-4 lg:py-5 px-4 md:px-5 lg:px-6">
                       <div className="size-16 md:size-20 lg:size-24 rounded-sm md:rounded-md border border-black flex items-center justify-center">
@@ -434,7 +434,7 @@ export default function PaymentOptionsPage() {
                 {unpaidAmount > 0 && (
                   <button
                     onClick={handleEqualShares}
-                    className="w-full bg-white cursor-pointer border-b border-[#8e8e8e] active:bg-[#0a8b9b]/10 transition-all duration-300"
+                    className="w-full bg-white cursor-pointer border-b border-stroke active:bg-even-grass/10 transition-all duration-300"
                   >
                     <div className="flex items-center gap-3 md:gap-4 lg:gap-5 py-3 md:py-4 lg:py-5 px-4 md:px-5 lg:px-6">
                       <div className="size-16 md:size-20 lg:size-24 rounded-sm md:rounded-md border border-black flex items-center justify-center">
@@ -467,7 +467,7 @@ export default function PaymentOptionsPage() {
                 {unpaidAmount > 0 && (
                   <button
                     onClick={handleChooseAmount}
-                    className="w-full bg-white cursor-pointer active:bg-[#0a8b9b]/10 transition-all duration-300"
+                    className="w-full bg-white cursor-pointer active:bg-even-grass/10 transition-all duration-300"
                   >
                     <div className="flex items-center gap-3 md:gap-4 lg:gap-5 py-3 md:py-4 lg:py-5 px-4 md:px-5 lg:px-6">
                       <div className="size-16 md:size-20 lg:size-24 rounded-sm md:rounded-md border border-black flex items-center justify-center">
@@ -492,11 +492,11 @@ export default function PaymentOptionsPage() {
               {/* Mensaje si no hay platillos pendientes */}
               {unpaidAmount <= 0 && (
                 <div className="my-8 md:my-10 lg:my-12 text-center px-6 md:px-8 lg:px-10">
-                  <div className="p-6 md:p-8 lg:p-10 bg-green-50 rounded-lg md:rounded-xl">
-                    <h3 className="text-lg md:text-xl lg:text-2xl font-medium text-green-800 mb-2 md:mb-3">
+                  <div className="p-6 md:p-8 lg:p-10 bg-even-grass/10 rounded-lg md:rounded-xl">
+                    <h3 className="text-lg md:text-xl lg:text-2xl font-medium text-even-evergreen mb-2 md:mb-3">
                       ¡Cuenta pagada completamente!
                     </h3>
-                    <p className="text-green-600 text-base md:text-lg lg:text-xl">
+                    <p className="text-even-shamrock text-base md:text-lg lg:text-xl">
                       Todos los platillos de la mesa han sido pagados.
                     </p>
                   </div>
@@ -518,19 +518,19 @@ export default function PaymentOptionsPage() {
                   </div>
                   {paidAmount > 0 && (
                     <div className="flex justify-between items-center">
-                      <span className="text-green-600 font-medium text-base md:text-xl lg:text-2xl">
+                      <span className="text-even-shamrock font-medium text-base md:text-xl lg:text-2xl">
                         Pagado:
                       </span>
-                      <span className="text-green-600 font-medium text-base md:text-xl lg:text-2xl">
+                      <span className="text-even-shamrock font-medium text-base md:text-xl lg:text-2xl">
                         ${paidAmount.toFixed(2)}
                       </span>
                     </div>
                   )}
                   <div className="flex justify-between items-center">
-                    <span className="text-[#eab3f4] font-medium text-base md:text-xl lg:text-2xl">
+                    <span className="text-even-grass font-medium text-base md:text-xl lg:text-2xl">
                       Restante:
                     </span>
-                    <span className="text-[#eab3f4] font-medium text-base md:text-xl lg:text-2xl">
+                    <span className="text-even-grass font-medium text-base md:text-xl lg:text-2xl">
                       ${unpaidAmount.toFixed(2)}
                     </span>
                   </div>

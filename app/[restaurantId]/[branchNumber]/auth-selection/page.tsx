@@ -203,7 +203,7 @@ export default function AuthSelectionPage() {
   }
 
   return (
-    <div className="min-h-new bg-gradient-to-br from-[#0a8b9b] to-[#153f43] flex flex-col">
+    <div className="min-h-new brand-evergreen flex flex-col">
       <MenuHeaderBack
         restaurant={restaurantData}
         tableNumber={state.tableNumber}
@@ -247,7 +247,7 @@ export default function AuthSelectionPage() {
                       <button
                         type="button"
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                        className="h-[52px] w-[90px] px-3 text-gray-700 font-medium bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] cursor-pointer flex items-center justify-between gap-1.5"
+                        className="h-[52px] w-[90px] px-3 text-gray-700 font-medium bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-even-evergreen cursor-pointer flex items-center justify-between gap-1.5"
                         disabled={loading}
                       >
                         <div className="flex items-center gap-1.5">
@@ -304,7 +304,7 @@ export default function AuthSelectionPage() {
                           setPhoneNumber(value);
                           setPhoneNumberDisplay(formatPhoneInput(value));
                         }}
-                        className="h-[52px] w-full pl-10 pr-3 text-gray-700 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0a8b9b]"
+                        className="h-[52px] w-full pl-10 pr-3 text-gray-700 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-even-evergreen"
                         placeholder="Número de teléfono"
                         disabled={loading}
                         maxLength={14}
@@ -316,7 +316,7 @@ export default function AuthSelectionPage() {
                 <button
                   type="submit"
                   disabled={loading || !phoneNumber || phoneNumber.length < 8}
-                  className="w-full bg-black hover:bg-stone-950 text-white py-3.5 rounded-full font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                  className="w-full bg-even-grass text-even-evergreen hover:opacity-90 py-3.5 rounded-full font-medium transition-opacity disabled:bg-even-grass/30 disabled:text-even-evergreen/40 disabled:cursor-not-allowed active:scale-95"
                 >
                   {loading ? "Enviando..." : "Acceder"}
                 </button>
@@ -348,7 +348,7 @@ export default function AuthSelectionPage() {
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
                 placeholder="000000"
-                className="w-full px-3 py-3 text-gray-700 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] text-center tracking-widest text-2xl"
+                className="w-full px-3 py-3 text-gray-700 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-even-evergreen text-center tracking-widest text-2xl"
                 required
                 disabled={loading}
                 autoFocus
@@ -357,7 +357,7 @@ export default function AuthSelectionPage() {
               <button
                 type="submit"
                 disabled={loading || otp.length !== 6}
-                className="w-full bg-black hover:bg-stone-950 text-white py-3.5 rounded-full font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                className="w-full bg-even-grass text-even-evergreen hover:opacity-90 py-3.5 rounded-full font-medium transition-opacity disabled:bg-even-grass/30 disabled:text-even-evergreen/40 disabled:cursor-not-allowed active:scale-95"
               >
                 {loading ? "Verificando..." : "Verificar código"}
               </button>
@@ -404,7 +404,7 @@ export default function AuthSelectionPage() {
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder="Nombre"
-                    className="h-[48px] w-full pl-10 pr-3 text-gray-600 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] appearance-none"
+                    className="h-[48px] w-full pl-10 pr-3 text-gray-600 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-even-evergreen appearance-none"
                     required
                     disabled={loading}
                   />
@@ -414,7 +414,7 @@ export default function AuthSelectionPage() {
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   placeholder="Apellido"
-                  className="h-[48px] w-full px-3 text-gray-600 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] appearance-none"
+                  className="h-[48px] w-full px-3 text-gray-600 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-even-evergreen appearance-none"
                   disabled={loading}
                 />
               </div>
@@ -428,7 +428,7 @@ export default function AuthSelectionPage() {
                   onChange={(e) =>
                     setAge(e.target.value === "" ? "" : Number(e.target.value))
                   }
-                  className="h-[48px] w-full px-3 text-gray-600 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] cursor-pointer appearance-none"
+                  className="h-[48px] w-full px-3 text-gray-600 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-even-evergreen cursor-pointer appearance-none"
                   disabled={loading}
                 >
                   <option value="" disabled>
@@ -444,7 +444,7 @@ export default function AuthSelectionPage() {
               <button
                 type="submit"
                 disabled={loading || !firstName || age === ""}
-                className="w-full bg-black hover:bg-stone-950 text-white py-3 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+                className="w-full bg-even-grass text-even-evergreen hover:opacity-90 py-3 rounded-full font-medium transition-opacity disabled:bg-even-grass/30 disabled:text-even-evergreen/40 disabled:cursor-not-allowed mt-6"
               >
                 {loading ? "Guardando..." : "Continuar"}
               </button>

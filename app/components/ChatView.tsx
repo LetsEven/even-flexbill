@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronDown, SendHorizontal, ShoppingBag, Check } from "lucide-react";
+import PepperIcon from "@/app/components/UI/PepperIcon";
 import { useState, useRef, useEffect, memo, useMemo } from "react";
 import { useRestaurant } from "../context/RestaurantContext";
 import RestaurantClosedModal from "./RestaurantClosedModal";
@@ -153,7 +154,7 @@ const LoadingDots = () => (
 // Spinner SVG igual al de user/page.tsx
 const Spinner = () => (
   <svg
-    className="h-4 w-4 text-[#ebb2f4]"
+    className="h-4 w-4 text-even-grass"
     style={{ animation: "spin 1s linear infinite" }}
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
@@ -400,16 +401,16 @@ const OrderButton = ({
         : status === "loading"
           ? {
               background:
-                "linear-gradient(160deg, rgba(245,210,255,0.7) 0%, rgba(220,140,238,0.6) 100%)",
-              boxShadow: "0 2px 12px rgba(200,100,230,0.2)",
+                "linear-gradient(160deg, rgba(200,255,160,0.7) 0%, rgba(130,230,87,0.6) 100%)",
+              boxShadow: "0 2px 12px rgba(82,230,87,0.2)",
               border: "1px solid rgba(255,255,255,0.4)",
               backdropFilter: "blur(12px)",
             }
           : {
               background:
-                "linear-gradient(160deg, rgba(250,220,255,0.97) 0%, rgba(235,178,244,0.92) 40%, rgba(210,130,235,0.88) 100%)",
+                "linear-gradient(160deg, rgba(190,250,140,0.97) 0%, rgba(130,230,87,0.92) 40%, rgba(100,200,60,0.88) 100%)",
               boxShadow:
-                "0 6px 24px rgba(190,80,230,0.3), 0 1px 0 rgba(255,255,255,0.75) inset, 0 -1px 0 rgba(120,0,160,0.08) inset",
+                "0 6px 24px rgba(82,230,87,0.3), 0 1px 0 rgba(255,255,255,0.75) inset, 0 -1px 0 rgba(2,56,40,0.08) inset",
               border: "1px solid rgba(255,255,255,0.6)",
               backdropFilter: "blur(16px)",
             };
@@ -818,17 +819,7 @@ export default function ChatView({ onBack }: ChatViewProps) {
           </button>
           <div className="flex items-center gap-3 md:gap-4">
             <div className="bg-white rounded-full border border-black/20 size-10 md:size-12 lg:size-14">
-              <video
-                src="/videos/video-icon-pepper.webm"
-                autoPlay
-                loop
-                muted
-                playsInline
-                disablePictureInPicture
-                controls={false}
-                controlsList="nodownload nofullscreen noremoteplayback"
-                className="w-full h-full object-cover rounded-full"
-              />
+              <PepperIcon />
             </div>
             <div>
               <h2 className="text-black/90 font-medium text-lg md:text-xl lg:text-2xl">
@@ -870,7 +861,7 @@ export default function ChatView({ onBack }: ChatViewProps) {
                 >
                   <div
                     className={`max-w-[80%] rounded-xl md:rounded-2xl px-4 md:px-5 lg:px-6 py-2 md:py-3 lg:py-4 text-black text-base md:text-lg lg:text-xl ${
-                      msg.role === "user" ? "bg-[#ebb2f4]" : "bg-white/60"
+                      msg.role === "user" ? "bg-even-grass" : "bg-white/60"
                     }`}
                   >
                     <MessageContent
@@ -891,19 +882,16 @@ export default function ChatView({ onBack }: ChatViewProps) {
         {!hasStartedChat && (
           <div className="text-center max-w-md px-8 md:px-10 lg:px-12">
             <div className="mb-8 md:mb-10 lg:mb-12 flex justify-center">
-              <div className="rounded-full h-28 w-28 md:h-36 md:w-36 lg:h-40 lg:w-40 overflow-hidden flex items-center justify-center">
-                <video
-                  src="/videos/video-icon-pepper.webm"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  disablePictureInPicture
-                  controls={false}
-                  controlsList="nodownload nofullscreen noremoteplayback"
-                  className="w-full h-full object-cover"
-                />
-              </div>
+              <svg
+                viewBox="0 0 48 40"
+                fill="currentColor"
+                aria-hidden="true"
+                className="w-28 md:w-32 lg:w-36 h-auto text-gray-400/60"
+              >
+                <path d="M20 11 Q22 20 31 22 Q22 24 20 33 Q18 24 9 22 Q18 20 20 11 Z" />
+                <path d="M37 6 Q38.3 11.7 44 13 Q38.3 14.3 37 20 Q35.7 14.3 30 13 Q35.7 11.7 37 6 Z" />
+                <path d="M39 25 Q39.7 28.3 43 29 Q39.7 29.7 39 33 Q38.3 29.7 35 29 Q38.3 28.3 39 25 Z" />
+              </svg>
             </div>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-black mb-8 md:mb-10 lg:mb-12">
               Pepper
@@ -929,7 +917,7 @@ export default function ChatView({ onBack }: ChatViewProps) {
           />
           <button
             onClick={handleSend}
-            className="text-[#ebb2f4] rounded-full transition-colors disabled:text-gray-400"
+            className="text-even-grass rounded-full transition-colors disabled:text-gray-400"
             disabled={!message.trim() || isLoading}
           >
             <SendHorizontal className="size-6 md:size-7 lg:size-8 -rotate-90" />

@@ -125,7 +125,7 @@ export default function HistoryTab() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12 md:py-16 lg:py-20">
-        <Loader2 className="size-8 md:size-10 lg:size-12 animate-spin text-teal-600" />
+        <Loader2 className="size-8 md:size-10 lg:size-12 animate-spin text-even-shamrock" />
       </div>
     );
   }
@@ -193,7 +193,7 @@ export default function HistoryTab() {
                       className="size-16 md:size-20 lg:size-24 object-cover rounded-lg md:rounded-xl"
                     />
                   ) : (
-                    <div className="size-16 md:size-20 lg:size-24 bg-teal-100 rounded-lg md:rounded-xl flex items-center justify-center">
+                    <div className="size-16 md:size-20 lg:size-24 bg-even-grass/10 rounded-lg md:rounded-xl flex items-center justify-center">
                       <span className="text-2xl md:text-3xl lg:text-4xl">
                         🍽️
                       </span>
@@ -263,7 +263,7 @@ export default function HistoryTab() {
       {hasMore && (
         <button
           onClick={handleLoadMore}
-          className="mt-4 md:mt-5 lg:mt-6 border border-black/50 flex justify-center items-center gap-1 md:gap-1.5 lg:gap-2 w-full text-black text-base md:text-lg lg:text-xl py-3 md:py-4 lg:py-5 rounded-full cursor-pointer transition-colors bg-[#f9f9f9] hover:bg-gray-100"
+          className="mt-4 md:mt-5 lg:mt-6 border border-black/50 flex justify-center items-center gap-1 md:gap-1.5 lg:gap-2 w-full text-black text-base md:text-lg lg:text-xl py-3 md:py-4 lg:py-5 rounded-full cursor-pointer transition-colors bg-surface hover:bg-gray-100"
         >
           Ver más órdenes
         </button>
@@ -279,7 +279,7 @@ export default function HistoryTab() {
             }}
           >
             <div
-              className="bg-[#173E44]/80 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] w-full mx-4 md:mx-12 lg:mx-28 rounded-4xl z-999 max-h-[72vh] flex flex-col"
+              className="bg-even-evergreen/80 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] w-full mx-4 md:mx-12 lg:mx-28 rounded-4xl z-999 max-h-[72vh] flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header - Fixed */}
@@ -303,7 +303,7 @@ export default function HistoryTab() {
                         className="size-20 md:size-24 lg:size-28 object-cover rounded-lg md:rounded-xl"
                       />
                     ) : (
-                      <div className="size-20 md:size-24 lg:size-28 bg-teal-100 rounded-lg md:rounded-xl flex items-center justify-center">
+                      <div className="size-20 md:size-24 lg:size-28 bg-even-grass/10 rounded-lg md:rounded-xl flex items-center justify-center">
                         <span className="text-2xl md:text-3xl lg:text-4xl">
                           🍽️
                         </span>

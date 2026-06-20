@@ -40,8 +40,7 @@ type CartAction =
   | {
       type: "SET_CART_ITEM_ID";
       payload: {
-        menuItemId: number;
-        customFieldsKey: string;
+        signature: string;
         cartItemId: string;
       };
     }
@@ -67,6 +66,25 @@ const initialState: CartState = {
   isLoading: false,
   cartId: null,
 };
+
+// Firma estable que identifica una "línea" del carrito independientemente de
+// la forma del objeto customFields (el dish page incluye fieldType, el backend
+// no). Solo usa lo que define la identidad: id + extraPrice + optionIds.
+function lineSignature(item: {
+  id: number;
+  extraPrice?: number;
+  customFields?: CartItem["customFields"];
+}) {
+  const fields = (item.customFields || [])
+    .map((f: any) => ({
+      fieldId: f.fieldId,
+      options: ((f.selectedOptions || []) as any[])
+        .map((o) => o.optionId)
+        .sort(),
+    }))
+    .sort((a, b) => String(a.fieldId).localeCompare(String(b.fieldId)));
+  return JSON.stringify({ id: item.id, extra: item.extraPrice || 0, fields });
+}
 
 function computeTotals(items: CartItem[]) {
   return {
@@ -111,13 +129,8 @@ function cartReducer(state: CartState, action: CartAction): CartState {
 
     case "ADD_ITEM": {
       const newItem = action.payload;
-      const cfKey = JSON.stringify(newItem.customFields || []);
-      const existing = state.items.find(
-        (i) =>
-          i.id === newItem.id &&
-          JSON.stringify(i.customFields || []) === cfKey &&
-          (i.extraPrice || 0) === (newItem.extraPrice || 0),
-      );
+      const sig = lineSignature(newItem);
+      const existing = state.items.find((i) => lineSignature(i) === sig);
       const newItems = existing
         ? state.items.map((i) =>
             i === existing
@@ -147,14 +160,17 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     }
 
     case "SET_CART_ITEM_ID": {
-      const { menuItemId, customFieldsKey, cartItemId } = action.payload;
-      const newItems = state.items.map((i) =>
-        i.id === menuItemId &&
-        !i.cartItemId &&
-        JSON.stringify(i.customFields || []) === customFieldsKey
-          ? { ...i, cartItemId }
-          : i,
-      );
+      const { signature, cartItemId } = action.payload;
+      // Sellar solo el primer pendiente que coincida — evita asignar el mismo
+      // cartItemId a varias filas (lo que haría que + las mueva juntas).
+      let stamped = false;
+      const newItems = state.items.map((i) => {
+        if (!stamped && !i.cartItemId && lineSignature(i) === signature) {
+          stamped = true;
+          return { ...i, cartItemId };
+        }
+        return i;
+      });
       return { ...state, items: newItems };
     }
 
@@ -268,12 +284,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   ) => {
     const previousItems = state.items;
     const previousCartId = state.cartId;
-    const customFieldsKey = JSON.stringify(item.customFields || []);
-
-    const effectiveInstructions =
-      specialInstructions !== undefined
-        ? specialInstructions
-        : ((item as any).specialInstructions ?? null);
+    const signature = lineSignature(item);
 
     dispatch({
       type: "ADD_ITEM",
@@ -281,7 +292,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         ...item,
         quantity,
         cartItemId: undefined,
-        specialInstructions: effectiveInstructions,
+        specialInstructions: specialInstructions || null,
       } as CartItem,
     });
 
@@ -292,15 +303,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
         item.customFields || [],
         item.extraPrice || 0,
         item.price,
-        effectiveInstructions,
+        specialInstructions,
       );
 
       if (response.success && response.data) {
         dispatch({
           type: "SET_CART_ITEM_ID",
           payload: {
-            menuItemId: item.id,
-            customFieldsKey,
+            signature,
             cartItemId: response.data.cart_item_id,
           },
         });
@@ -483,8 +493,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (response.success) {
         setOrderNotes("");
         dispatch({ type: "CLEAR_CART" });
-        // Refrescar desde el backend para asegurar sincronización
-        await refreshCart();
       } else {
         console.error("Error clearing cart:", response.error);
         dispatch({ type: "SET_LOADING", payload: false });

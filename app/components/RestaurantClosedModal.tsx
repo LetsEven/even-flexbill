@@ -66,7 +66,7 @@ export default function RestaurantClosedModal({
               ) : (
                 <div className="w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 bg-gray-200 rounded-lg md:rounded-xl flex items-center justify-center mb-3 md:mb-4 lg:mb-5">
                   <img
-                    src="/logo-short-green.webp"
+                    src="/even/even-asterisk-grass.svg"
                     alt="Logo Even"
                     className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain"
                   />
@@ -87,7 +87,7 @@ export default function RestaurantClosedModal({
             </p>
 
             {nextOpeningTime && (
-              <div className="bg-[#f9f9f9] border border-[#bfbfbf]/50 rounded-lg md:rounded-xl p-2 md:p-3 lg:p-4">
+              <div className="bg-surface border border-stroke-soft/50 rounded-lg md:rounded-xl p-2 md:p-3 lg:p-4">
                 <p className="text-black font-medium text-center text-base md:text-lg lg:text-xl">
                   {nextOpeningTime}
                 </p>

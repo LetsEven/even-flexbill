@@ -49,7 +49,7 @@ export default function MenuHeader({
             {cartState.totalItems > 0 && (
               <div
                 id="cart-badge"
-                className="absolute -top-1 -right-1 bg-[#eab3f4] text-white rounded-full size-4 md:size-5 lg:size-6 flex items-center justify-center text-xs md:text-sm font-normal"
+                className="absolute -top-1 -right-1 bg-even-grass text-even-evergreen rounded-full size-4 md:size-5 lg:size-6 flex items-center justify-center text-xs md:text-sm font-normal"
               >
                 {cartState.totalItems}
               </div>
@@ -65,7 +65,7 @@ export default function MenuHeader({
             </div>
             {Array.isArray(tableState.dishOrders) &&
               tableState.dishOrders.length > 0 && (
-                <div className="absolute -top-1 -right-1 bg-[#eab3f4] text-white rounded-full size-4 md:size-5 lg:size-6 flex items-center justify-center text-xs md:text-sm font-normal">
+                <div className="absolute -top-1 -right-1 bg-even-grass text-even-evergreen rounded-full size-4 md:size-5 lg:size-6 flex items-center justify-center text-xs md:text-sm font-normal">
                   {tableState.dishOrders.length}
                 </div>
               )}

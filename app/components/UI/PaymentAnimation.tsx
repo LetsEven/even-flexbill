@@ -29,7 +29,7 @@ export default function PaymentAnimation({
   if (!isActive) return null;
 
   return (
-    <div className="fixed inset-0 z-[99999] bg-gradient-to-br from-[#0a8b9b] to-[#153f43]">
+    <div className="fixed inset-0 z-[99999] brand-evergreen">
       {/* Animated Checkmark SVG */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="animated_checkmark">
@@ -42,7 +42,7 @@ export default function PaymentAnimation({
             <circle
               className="path circle"
               fill="none"
-              stroke="#eab3f4"
+              stroke="#82e657"
               strokeWidth="6"
               strokeMiterlimit="10"
               cx="65.1"
@@ -52,7 +52,7 @@ export default function PaymentAnimation({
             <polyline
               className="path check"
               fill="none"
-              stroke="#eab3f4"
+              stroke="#82e657"
               strokeWidth="8"
               strokeLinecap="round"
               strokeMiterlimit="10"

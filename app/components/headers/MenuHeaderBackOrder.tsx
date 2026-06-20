@@ -209,7 +209,7 @@ export default function MenuHeaderBackOrder({
 
         {/* Even Logo */}
         <div className="absolute left-1/2 transform -translate-x-1/2 size-10 md:size-12 lg:size-14">
-          <img src="/logo-short-green.webp" alt="Even Logo" />
+          <img src="/even/even-asterisk-grass.svg" alt="Even" />
         </div>
 
         {/* Participantes */}
@@ -223,7 +223,7 @@ export default function MenuHeaderBackOrder({
             {remainingCount > 0 && (
               <div
                 onClick={() => setIsParticipantsModalOpen(true)}
-                className="size-10 md:size-12 lg:size-14 bg-white rounded-full flex items-center justify-center text-black text-base md:text-lg lg:text-xl font-medium border border-[#8e8e8e] shadow-sm cursor-pointer"
+                className="size-10 md:size-12 lg:size-14 bg-white rounded-full flex items-center justify-center text-black text-base md:text-lg lg:text-xl font-medium border border-stroke shadow-sm cursor-pointer"
               >
                 +{remainingCount}
               </div>
@@ -280,7 +280,7 @@ export default function MenuHeaderBackOrder({
           <div className="relative bg-white rounded-t-4xl w-full mx-4 md:mx-6 lg:mx-8">
             {/* Titulo */}
             <div className="px-6 md:px-8 lg:px-10 pt-4 md:pt-5 lg:pt-6">
-              <div className="flex items-center justify-between pb-4 md:pb-5 border-b border-[#8e8e8e]">
+              <div className="flex items-center justify-between pb-4 md:pb-5 border-b border-stroke">
                 <h3 className="text-lg md:text-xl lg:text-2xl font-semibold text-black">
                   Participantes
                 </h3>
@@ -331,7 +331,7 @@ export default function MenuHeaderBackOrder({
                           </span>
                         )}
                       </p>
-                      <p className="text-sm md:text-base lg:text-lg text-[#8e8e8e]">
+                      <p className="text-sm md:text-base lg:text-lg text-stroke">
                         {(() => {
                           const userOrders = Array.isArray(state.dishOrders)
                             ? state.dishOrders.filter(

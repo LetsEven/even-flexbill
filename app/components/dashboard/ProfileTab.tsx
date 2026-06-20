@@ -179,7 +179,7 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12 md:py-16 lg:py-20">
-        <Loader2 className="size-8 md:size-10 lg:size-12 animate-spin text-teal-600" />
+        <Loader2 className="size-8 md:size-10 lg:size-12 animate-spin text-even-shamrock" />
       </div>
     );
   }
@@ -189,7 +189,7 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
       {/* Profile Image */}
       <div className="flex flex-col items-center">
         <div className="relative group mb-4">
-          <div className="size-28 md:size-32 lg:size-36 rounded-full bg-gray-200 overflow-hidden border-2 md:border-4 border-teal-600 flex items-center justify-center">
+          <div className="size-28 md:size-32 lg:size-36 rounded-full bg-gray-200 overflow-hidden border-2 md:border-4 border-even-shamrock flex items-center justify-center">
             {isAuthenticated && photoUrl ? (
               <img
                 src={photoUrl}
@@ -209,7 +209,7 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
           {isAuthenticated && (
             <label
               htmlFor="profile-image"
-              className="absolute bottom-0 right-0 bg-teal-600 text-white p-2 md:p-2.5 lg:p-3 rounded-full cursor-pointer hover:bg-teal-700 transition-colors"
+              className="absolute bottom-0 right-0 bg-even-grass text-even-evergreen p-2 md:p-2.5 lg:p-3 rounded-full cursor-pointer hover:bg-even-grass/80 transition-colors"
             >
               <Camera className="size-4 md:size-5 lg:size-6" />
               <input
@@ -237,7 +237,7 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
             placeholder="Tu nombre"
-            className="w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 border text-black text-base md:text-lg lg:text-xl border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-teal-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 border text-black text-base md:text-lg lg:text-xl border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-even-grass focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
             disabled={isUpdating || !isAuthenticated}
           />
         </div>
@@ -251,7 +251,7 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
             placeholder="Tu apellido"
-            className="w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 border text-black text-base md:text-lg lg:text-xl border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-teal-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 border text-black text-base md:text-lg lg:text-xl border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-even-grass focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
             disabled={isUpdating || !isAuthenticated}
           />
         </div>
@@ -277,7 +277,7 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
             onChange={(e) =>
               setAge(e.target.value === "" ? undefined : Number(e.target.value))
             }
-            className="cursor-pointer w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 border text-black text-base md:text-lg lg:text-xl border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-teal-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed bg-white"
+            className="cursor-pointer w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 border text-black text-base md:text-lg lg:text-xl border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-even-grass focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed bg-white"
             disabled={isUpdating || !isAuthenticated}
           >
             <option value="" disabled>
@@ -299,7 +299,7 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
           className={`font-medium text-sm md:text-base lg:text-lg flex items-center gap-2 cursor-pointer ${
             isAuthenticated
               ? "text-red-600 hover:text-red-700"
-              : "text-teal-600 hover:text-teal-700"
+              : "text-even-shamrock hover:text-even-evergreen"
           }`}
         >
           {isAuthenticated ? (

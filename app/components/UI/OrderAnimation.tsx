@@ -174,7 +174,7 @@ const OrderAnimation = ({
                 {/* Logo container */}
                 <div className="size-20 md:size-24 lg:size-28 flex items-center justify-center rounded-full relative z-10">
                   <img
-                    src="/logo-short-green.webp"
+                    src="/even/even-asterisk-grass.svg"
                     alt="Even Logo"
                     className="size-14 md:size-16 lg:size-20 grayscale opacity-50"
                   />
@@ -187,13 +187,13 @@ const OrderAnimation = ({
               </div>
 
               {/* Información del pedido */}
-              <div className="flex flex-col w-full divide-y divide-[#8e8e8e]/50">
+              <div className="flex flex-col w-full divide-y divide-stroke/50">
                 {/* Restaurante */}
                 <div className="pb-4 md:pb-6 lg:pb-7">
                   <div className="flex items-center gap-3 md:gap-4">
                     <div className="size-10 md:size-12 lg:size-14 rounded-full border border-gray-400 bg-gray-100 overflow-hidden flex-shrink-0">
                       <img
-                        src={restaurant?.logo_url || "/logo-short-green.webp"}
+                        src={restaurant?.logo_url || "/even/even-asterisk-grass.svg"}
                         alt={displayRestaurant}
                         className="object-cover w-full h-full"
                       />
@@ -222,7 +222,7 @@ const OrderAnimation = ({
                         className="size-10 md:size-12 lg:size-14 rounded-full object-cover border border-gray-400 flex-shrink-0"
                       />
                     ) : (
-                      <div className="size-10 md:size-12 lg:size-14 rounded-full border border-gray-400 bg-gradient-to-br from-[#0a8b9b] to-[#153f43] flex items-center justify-center flex-shrink-0">
+                      <div className="size-10 md:size-12 lg:size-14 rounded-full border border-gray-400 bg-even-evergreen flex items-center justify-center flex-shrink-0">
                         <span className="text-white text-base md:text-lg lg:text-xl font-bold">
                           {displayName.charAt(0).toUpperCase()}
                         </span>
@@ -265,7 +265,7 @@ const OrderAnimation = ({
                               />
                             ) : (
                               <img
-                                src="/logo-short-green.webp"
+                                src="/even/even-asterisk-evergreen.svg"
                                 alt="Logo Even"
                                 className="size-6 md:size-8 lg:size-10 object-contain"
                               />
@@ -306,7 +306,7 @@ const OrderAnimation = ({
                 >
                   <button
                     onClick={handleCancel}
-                    className="py-1 md:py-1.5 px-6 md:px-8 text-black rounded-full active:scale-95 transition-all font-medium text-sm md:text-base bg-[#f9f9f9] lg:py-2 border border-[#8e8e8e]/40 cursor-pointer"
+                    className="py-1 md:py-1.5 px-6 md:px-8 text-black rounded-full active:scale-95 transition-all font-medium text-sm md:text-base bg-surface lg:py-2 border border-stroke/40 cursor-pointer"
                   >
                     Deshacer pedido
                   </button>

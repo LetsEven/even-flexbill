@@ -33,7 +33,7 @@ export default function DashboardView({
   if (isLoading) {
     return (
       <div
-        className={`flex items-center justify-center ${onClose ? "h-full" : "h-dvh bg-gradient-to-br from-[#0a8b9b] to-[#153f43]"}`}
+        className={`flex items-center justify-center ${onClose ? "h-full" : "h-dvh brand-evergreen"}`}
       >
         <Loader2 className="size-12 animate-spin text-white" />
       </div>
@@ -42,14 +42,14 @@ export default function DashboardView({
 
   return (
     <div
-      className={`flex flex-col overflow-y-auto ${onClose ? "h-full" : "h-dvh bg-gradient-to-br from-[#0a8b9b] to-[#153f43]"}`}
+      className={`flex flex-col overflow-y-auto ${onClose ? "h-full" : "h-dvh brand-evergreen"}`}
     >
       <DashboardHeader onClose={onClose} />
 
       <div className="px-4 md:px-6 lg:px-8 w-full flex-1 flex flex-col">
         {/* Welcome Header */}
         <div
-          className={`left-4 right-4 rounded-t-4xl translate-y-7 z-0 ${onClose ? "bg-black/5" : "bg-gradient-to-tl from-[#0a8b9b] to-[#1d727e]"}`}
+          className={`left-4 right-4 rounded-t-4xl translate-y-7 z-0 ${onClose ? "bg-black/5" : "bg-even-evergreen"}`}
         >
           <div className="py-6 md:py-8 lg:py-10 px-8 md:px-10 lg:px-12 flex flex-col justify-center pb-12 md:pb-14 lg:pb-16">
             <h1

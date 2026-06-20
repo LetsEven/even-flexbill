@@ -12,6 +12,7 @@ import {
 } from "react";
 import MenuHeader from "@/app/components/headers/MenuHeader";
 import MenuCategory from "@/app/components/MenuCategory";
+import PepperIcon from "@/app/components/UI/PepperIcon";
 import ErrorScreen from "@/app/components/ErrorScreen";
 import Loader from "@/app/components/UI/Loader";
 import {
@@ -321,21 +322,9 @@ function MenuView({ tableNumber }: MenuViewProps) {
             {/* Assistant Icon */}
             <button
               onClick={() => setShowPepperChat(true)}
-              className="bg-white rounded-full text-black border border-gray-400 size-10 md:size-12 lg:size-14 shadow-sm overflow-hidden"
+              className="bg-white rounded-full size-10 md:size-12 lg:size-14 shadow-sm overflow-hidden hover:bg-gray-50 transition-all active:scale-95"
             >
-              <video
-                src="/videos/video-icon-pepper.webm"
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="none"
-                aria-hidden="true"
-                disablePictureInPicture
-                controls={false}
-                controlsList="nodownload nofullscreen noremoteplayback"
-                className="w-full h-full object-cover rounded-full"
-              />
+              <PepperIcon />
             </button>
           </div>
 
@@ -361,13 +350,13 @@ function MenuView({ tableNumber }: MenuViewProps) {
                   <div className="mt-3 flex flex-wrap gap-2 justify-center">
                     <button
                       onClick={() => setIsStatusModalOpen(true)}
-                      className="bg-[#f9f9f9] border border-[#8e8e8e] rounded-full px-3 md:px-4 lg:px-5 py-1 md:py-1.5 text-sm md:text-base lg:text-lg font-medium text-black active:scale-90 transition-all"
+                      className="bg-surface border border-stroke rounded-full px-3 md:px-4 lg:px-5 py-1 md:py-1.5 text-sm md:text-base lg:text-lg font-medium text-black active:scale-90 transition-all"
                     >
                       Estado del pedido
                     </button>
                     <button
                       onClick={() => setShowReorderModal(true)}
-                      className="bg-[#eab3f4] text-white border border-[#8e8e8e] rounded-full px-3 md:px-4 lg:px-5 py-1 md:py-1.5 text-sm md:text-base lg:text-lg font-medium flex items-center gap-1.5 active:scale-90 transition-all"
+                      className="bg-even-grass text-even-evergreen border border-stroke rounded-full px-3 md:px-4 lg:px-5 py-1 md:py-1.5 text-sm md:text-base lg:text-lg font-medium flex items-center gap-1.5 active:scale-90 transition-all"
                     >
                       Reordenar
                       <RefreshCw className="size-4" />
@@ -439,7 +428,7 @@ function MenuView({ tableNumber }: MenuViewProps) {
         <div className="fixed bottom-6 md:bottom-8 lg:bottom-10 left-0 right-0 z-50 flex justify-center">
           <button
             onClick={() => navigateWithTable("/cart")}
-            className="bg-gradient-to-r from-[#34808C] to-[#173E44] text-white rounded-full px-6 md:px-8 lg:px-10 py-4 md:py-5 lg:py-6 shadow-lg flex items-center gap-3 md:gap-4 transition-all hover:scale-105 animate-bounce-in active:scale-90"
+            className="bg-even-grass text-even-evergreen rounded-full px-6 md:px-8 lg:px-10 py-4 md:py-5 lg:py-6 shadow-lg flex items-center gap-3 md:gap-4 cursor-pointer transition-all hover:scale-105 animate-bounce-in active:scale-90"
           >
             <ShoppingCart className="size-5 md:size-6 lg:size-7" />
             <span className="text-base md:text-lg lg:text-xl font-medium">
@@ -491,7 +480,7 @@ function MenuView({ tableNumber }: MenuViewProps) {
               />
             </button>
             {cartState.totalItems > 0 && (
-              <div className="absolute -top-1 -right-1 bg-[#eab3f4] text-white rounded-full size-5 flex items-center justify-center text-xs font-normal">
+              <div className="absolute -top-1 -right-1 bg-even-grass text-even-evergreen rounded-full size-5 flex items-center justify-center text-xs font-normal">
                 {cartState.totalItems}
               </div>
             )}
@@ -510,7 +499,7 @@ function MenuView({ tableNumber }: MenuViewProps) {
             </button>
             {Array.isArray(tableState.dishOrders) &&
               tableState.dishOrders.length > 0 && (
-                <div className="absolute -top-1 -right-1 bg-[#eab3f4] text-white rounded-full size-5 flex items-center justify-center text-xs font-normal">
+                <div className="absolute -top-1 -right-1 bg-even-grass text-even-evergreen rounded-full size-5 flex items-center justify-center text-xs font-normal">
                   {tableState.dishOrders.length}
                 </div>
               )}
@@ -519,21 +508,9 @@ function MenuView({ tableNumber }: MenuViewProps) {
           {/* Pepper */}
           <button
             onClick={() => setShowPepperChat(true)}
-            className="size-11 md:size-12 rounded-full border border-gray-200 bg-white/60 overflow-hidden hover:bg-white transition-colors active:scale-95"
+            className="size-11 md:size-12 rounded-full border border-gray-200 bg-white overflow-hidden hover:bg-gray-50 transition-colors active:scale-95"
           >
-            <video
-              src="/videos/video-icon-pepper.webm"
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="none"
-              aria-hidden="true"
-              disablePictureInPicture
-              controls={false}
-              controlsList="nodownload nofullscreen noremoteplayback"
-              className="w-full h-full object-cover"
-            />
+            <PepperIcon />
           </button>
         </div>
       </div>
@@ -626,7 +603,7 @@ function MenuView({ tableNumber }: MenuViewProps) {
           onClick={() => setIsStatusModalOpen(false)}
         >
           <div
-            className="bg-[#173E44]/80 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] w-full mx-4 md:mx-12 lg:mx-28 rounded-4xl z-[999] max-h-[85vh] flex flex-col"
+            className="bg-even-evergreen/80 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] w-full mx-4 md:mx-12 lg:mx-28 rounded-4xl z-[999] max-h-[85vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -703,9 +680,9 @@ function MenuView({ tableNumber }: MenuViewProps) {
                             />
                           ) : (
                             <img
-                              src="/logos/logo-short-green.webp"
+                              src="/even/even-asterisk-evergreen.svg"
                               alt="Logo Even"
-                              className="size-12 md:size-14 lg:size-16 object-contain"
+                              className="size-10 md:size-12 lg:size-14 object-contain"
                             />
                           )}
                         </div>
