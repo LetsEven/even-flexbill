@@ -31,7 +31,6 @@ const jakarta = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: "Even Flex Bill",
   description: "Divide y paga tu cuenta desde tu dispositivo",
-  manifest: "/app.webmanifest",
 };
 
 export const viewport: Viewport = {
