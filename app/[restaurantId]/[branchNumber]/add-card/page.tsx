@@ -17,8 +17,18 @@ import Loader from "@/app/components/UI/Loader";
 import { useAuth } from "@/app/context/AuthContext";
 
 const MONTHS = [
-  "01", "02", "03", "04", "05", "06",
-  "07", "08", "09", "10", "11", "12",
+  "01",
+  "02",
+  "03",
+  "04",
+  "05",
+  "06",
+  "07",
+  "08",
+  "09",
+  "10",
+  "11",
+  "12",
 ];
 const START_YEAR = new Date().getFullYear();
 const YEARS = Array.from(
@@ -53,11 +63,17 @@ function AddCardContent() {
     general?: string;
   }>({});
 
-  // Refresh payment methods on mount to ensure we have the latest data
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     refreshPaymentMethods();
   }, []);
+
+  const handleBack = () => {
+    if (searchParams.get("returnTo") === "cards") {
+      navigateWithTable("/menu?dashboard=cards");
+    } else {
+      router.back();
+    }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -81,7 +97,7 @@ function AddCardContent() {
     setFullName("Test User");
     setCardNumber("4242 4242 4242 4242");
     setExpMonthIdx(11); // December
-    setExpYearIdx(2);   // 3rd year in range
+    setExpYearIdx(2); // 3rd year in range
     setCvv("123");
   };
 
@@ -137,9 +153,12 @@ function AddCardContent() {
 
         await refreshPaymentMethods();
 
+        const returnTo = searchParams.get("returnTo");
         const fromSavedCards = document.referrer.includes("/saved-cards");
 
-        if (fromSavedCards) {
+        if (returnTo === "cards") {
+          navigateWithTable("/menu?dashboard=cards");
+        } else if (fromSavedCards) {
           navigateWithTable("/saved-cards");
         } else {
           router.back();
@@ -252,6 +271,7 @@ function AddCardContent() {
         <MenuHeaderBack
           restaurant={restaurantData}
           tableNumber={state.tableNumber}
+          onBack={handleBack}
         />
 
         <div className="px-4 md:px-6 lg:px-8 w-full flex-1 flex flex-col justify-end">

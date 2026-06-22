@@ -221,11 +221,17 @@ export default function AuthSelectionPage() {
                   : "Completa tu perfil"}
             </h1>
             <p className="text-white/80 text-sm md:text-base">
-              {step === "phone"
-                ? "Ingresa tu número para acceder o crear tu cuenta"
-                : step === "verify"
-                  ? `Enviamos un código al ${formatPhoneNumber(phone)}`
-                  : "Cuéntanos un poco más sobre ti"}
+              {step === "phone" ? (
+                "Ingresa tu número para acceder o crear tu cuenta"
+              ) : step === "verify" ? (
+                <>
+                  Enviamos un código al
+                  <br />
+                  {formatPhoneNumber(phone)}
+                </>
+              ) : (
+                "Cuéntanos un poco más sobre ti"
+              )}
             </p>
           </div>
 

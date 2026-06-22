@@ -193,7 +193,7 @@ export default function HistoryTab() {
                       className="size-16 md:size-20 lg:size-24 object-cover rounded-lg md:rounded-xl"
                     />
                   ) : (
-                    <div className="size-16 md:size-20 lg:size-24 bg-even-grass/10 rounded-lg md:rounded-xl flex items-center justify-center">
+                    <div className="size-16 md:size-20 lg:size-24 bg-even-grass/20 rounded-lg md:rounded-xl flex items-center justify-center">
                       <span className="text-2xl md:text-3xl lg:text-4xl">
                         🍽️
                       </span>
@@ -303,7 +303,7 @@ export default function HistoryTab() {
                         className="size-20 md:size-24 lg:size-28 object-cover rounded-lg md:rounded-xl"
                       />
                     ) : (
-                      <div className="size-20 md:size-24 lg:size-28 bg-even-grass/10 rounded-lg md:rounded-xl flex items-center justify-center">
+                      <div className="size-20 md:size-24 lg:size-28 bg-even-grass/20 rounded-lg md:rounded-xl flex items-center justify-center">
                         <span className="text-2xl md:text-3xl lg:text-4xl">
                           🍽️
                         </span>
@@ -322,6 +322,17 @@ export default function HistoryTab() {
                           Mesa {selectedOrderDetails.tableNumber}
                         </p>
                       ) : null}
+                      {/* Pick & Go: estatus a nivel de orden */}
+                      {selectedOrderDetails.orderType === "pick-and-go" &&
+                        selectedOrderDetails.tableOrderStatus && (
+                          <span
+                            className={`inline-block mt-2 px-3 py-1 rounded-full text-xs md:text-sm font-medium border ${getStatusColor(selectedOrderDetails.tableOrderStatus)}`}
+                          >
+                            {getStatusText(
+                              selectedOrderDetails.tableOrderStatus,
+                            )}
+                          </span>
+                        )}
                     </div>
                   </div>
                 </div>
@@ -396,12 +407,20 @@ export default function HistoryTab() {
                       key={dish.dishOrderId}
                       className="flex justify-between items-center gap-3 md:gap-4 lg:gap-5"
                     >
-                      <div className="size-14 md:size-16 lg:size-20 bg-gray-300 rounded-sm md:rounded-md flex items-center justify-center hover:scale-105 transition-transform duration-200">
-                        <img
-                          src={dish.images[0]}
-                          alt="Dish preview"
-                          className="w-full h-full object-cover rounded-sm md:rounded-md"
-                        />
+                      <div className="size-14 md:size-16 lg:size-20 bg-gray-300 rounded-sm md:rounded-md flex items-center justify-center hover:scale-105 transition-transform duration-200 overflow-hidden">
+                        {dish.images?.[0] ? (
+                          <img
+                            src={dish.images[0]}
+                            alt="Dish preview"
+                            className="w-full h-full object-cover rounded-sm md:rounded-md"
+                          />
+                        ) : (
+                          <img
+                            src="/even/even-asterisk-evergreen.svg"
+                            alt="Logo Even"
+                            className="size-7 md:size-9 lg:size-11 object-contain"
+                          />
+                        )}
                       </div>
                       {/* Dish Info */}
                       <div className="flex-1">
@@ -416,14 +435,15 @@ export default function HistoryTab() {
                             + Extras: ${dish.extraPrice?.toFixed(2)} MXN
                           </p>
                         )}
-                        {/* Status Badge */}
-                        {dish.status && (
-                          <span
-                            className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(dish.status)}`}
-                          >
-                            {getStatusText(dish.status)}
-                          </span>
-                        )}
+                        {/* Status Badge — Pick & Go maneja el estatus a nivel de orden, no por platillo */}
+                        {selectedOrderDetails.orderType !== "pick-and-go" &&
+                          dish.status && (
+                            <span
+                              className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(dish.status)}`}
+                            >
+                              {getStatusText(dish.status)}
+                            </span>
+                          )}
                       </div>
 
                       {/* Total Price */}

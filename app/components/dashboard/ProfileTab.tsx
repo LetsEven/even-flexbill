@@ -1,10 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useTableNavigation } from "@/app/hooks/useTableNavigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { authService } from "@/app/services/auth.service";
-import { User, Camera, Loader2, Phone, X, LogOut, LogIn } from "lucide-react";
+import {
+  User,
+  Camera,
+  Loader2,
+  Phone,
+  X,
+  LogOut,
+  LogIn,
+  CircleAlert,
+} from "lucide-react";
 
 interface ProfileTabProps {
   onLogout?: () => void;
@@ -21,12 +31,18 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
     updateProfile,
   } = useAuth();
   const [isUpdating, setIsUpdating] = useState(false);
+  const [firstName, setFirstName] = useState(profile?.firstName || "");
+  const [lastName, setLastName] = useState(profile?.lastName || "");
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [age, setAge] = useState<number | "">();
-  const [photoUrl, setPhotoUrl] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [phone, setPhone] = useState(profile?.phone || "");
+  const [age, setAge] = useState<number | "">(
+    profile?.birthDate
+      ? new Date().getUTCFullYear() -
+          new Date(profile.birthDate).getUTCFullYear()
+      : "",
+  );
+  const [photoUrl, setPhotoUrl] = useState(profile?.photoUrl || "");
 
   const isAuthenticated = !!user;
 
@@ -61,7 +77,7 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
         profile.birthDate
           ? new Date().getUTCFullYear() -
               new Date(profile.birthDate).getUTCFullYear()
-          : undefined,
+          : "",
       );
       setPhotoUrl(profile.photoUrl || "");
     } else if (!isLoading && user) {
@@ -71,7 +87,7 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
   }, [profile, isLoading, user]);
 
   const handleUpdateProfile = async () => {
-    if (!isAuthenticated || !age) return;
+    if (!isAuthenticated || age === "") return;
 
     setIsUpdating(true);
     try {
@@ -83,11 +99,13 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
       });
 
       if (response.success) {
+        await refreshProfile();
       } else {
         throw new Error(response.error || "Error al actualizar");
       }
     } catch (error) {
       console.error("Error al actualizar el perfil:", error);
+      setErrorMessage("Error al actualizar el perfil");
     } finally {
       setIsUpdating(false);
     }
@@ -98,13 +116,13 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
 
     const file = e.target.files[0];
 
-    // Validar tamaño (5MB max)
     if (file.size > 5 * 1024 * 1024) {
+      setErrorMessage("La imagen no puede superar los 5MB");
       return;
     }
 
-    // Validar tipo
     if (!file.type.startsWith("image/")) {
+      setErrorMessage("Solo se permiten archivos de imagen");
       return;
     }
 
@@ -113,6 +131,8 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
     try {
       const token = authService.getAccessToken();
       if (!token) {
+        setErrorMessage("No estás autenticado");
+        setIsUpdating(false);
         return;
       }
 
@@ -153,6 +173,7 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
       }
     } catch (error) {
       console.error("Error al actualizar la foto:", error);
+      setErrorMessage("Error al actualizar la foto");
     } finally {
       setIsUpdating(false);
     }
@@ -176,7 +197,7 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || (user && !profile)) {
     return (
       <div className="flex items-center justify-center py-12 md:py-16 lg:py-20">
         <Loader2 className="size-8 md:size-10 lg:size-12 animate-spin text-even-shamrock" />
@@ -189,7 +210,7 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
       {/* Profile Image */}
       <div className="flex flex-col items-center">
         <div className="relative group mb-4">
-          <div className="size-28 md:size-32 lg:size-36 rounded-full bg-gray-200 overflow-hidden border-2 md:border-4 border-even-shamrock flex items-center justify-center">
+          <div className="size-28 md:size-32 lg:size-36 rounded-full bg-gray-200 overflow-hidden border-2 md:border-4 border-even-evergreen flex items-center justify-center">
             {isAuthenticated && photoUrl ? (
               <img
                 src={photoUrl}
@@ -237,7 +258,7 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
             placeholder="Tu nombre"
-            className="w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 border text-black text-base md:text-lg lg:text-xl border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-even-grass focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 border text-black text-base md:text-lg lg:text-xl border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-even-evergreen focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
             disabled={isUpdating || !isAuthenticated}
           />
         </div>
@@ -251,7 +272,7 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
             placeholder="Tu apellido"
-            className="w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 border text-black text-base md:text-lg lg:text-xl border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-even-grass focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 border text-black text-base md:text-lg lg:text-xl border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-even-evergreen focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
             disabled={isUpdating || !isAuthenticated}
           />
         </div>
@@ -275,9 +296,9 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
           <select
             value={age ?? ""}
             onChange={(e) =>
-              setAge(e.target.value === "" ? undefined : Number(e.target.value))
+              setAge(e.target.value === "" ? "" : Number(e.target.value))
             }
-            className="cursor-pointer w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 border text-black text-base md:text-lg lg:text-xl border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-even-grass focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed bg-white"
+            className="cursor-pointer w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 border text-black text-base md:text-lg lg:text-xl border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-even-evergreen focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed bg-white"
             disabled={isUpdating || !isAuthenticated}
           >
             <option value="" disabled>
@@ -321,7 +342,7 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
         <button
           onClick={handleUpdateProfile}
           disabled={isUpdating}
-          className="mt-6 md:mt-8 lg:mt-10 bg-black hover:bg-stone-950 w-full text-white py-3 md:py-4 lg:py-5 text-base md:text-lg lg:text-xl rounded-full cursor-pointer transition-colors disabled:bg-stone-600 disabled:cursor-not-allowed"
+          className="mt-6 md:mt-8 lg:mt-10 bg-even-grass hover:opacity-90 w-full text-even-evergreen py-3 md:py-4 lg:py-5 text-base md:text-lg lg:text-xl rounded-full cursor-pointer transition-opacity disabled:bg-even-grass/30 disabled:text-even-evergreen/40 disabled:cursor-not-allowed"
         >
           {isUpdating ? (
             <div className="flex items-center justify-center gap-1 md:gap-2">
@@ -335,54 +356,85 @@ export default function ProfileTab({ onLogout }: ProfileTabProps = {}) {
       )}
 
       {/* Logout Confirmation Modal */}
-      {isLogoutModalOpen && (
-        <div
-          className="fixed inset-0 flex items-end justify-center"
-          style={{ zIndex: 99999 }}
-        >
-          {/* Fondo */}
+      {isLogoutModalOpen &&
+        createPortal(
           <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setIsLogoutModalOpen(false)}
-          ></div>
-
-          <div className="relative bg-white rounded-t-4xl w-full mx-4 p-6 md:p-7 lg:p-8">
-            {/* Close Button */}
-            <button
+            className="fixed inset-0 flex items-end justify-center"
+            style={{ zIndex: 99999 }}
+          >
+            <div
+              className="absolute inset-0 bg-black/40"
               onClick={() => setIsLogoutModalOpen(false)}
-              className="absolute top-4 md:top-5 lg:top-6 right-4 md:right-5 lg:right-6 text-gray-400 hover:text-gray-600"
-            >
-              <X className="size-5 md:size-6 lg:size-7" />
-            </button>
-
-            {/* Modal Title */}
-            <h3 className="text-base md:text-xl lg:text-2xl font-semibold text-gray-800 mb-4 md:mb-5">
-              Cerrar sesión
-            </h3>
-
-            {/* Confirmation Message */}
-            <p className="text-sm md:text-base text-gray-600 mb-6 md:mb-8">
-              ¿Estás seguro de que deseas cerrar sesión?
-            </p>
-
-            {/* Action Buttons */}
-            <div className="flex gap-3 md:gap-4">
+            />
+            <div className="relative bg-white rounded-t-4xl w-full mx-4 p-6 md:p-7 lg:p-8">
               <button
                 onClick={() => setIsLogoutModalOpen(false)}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 md:py-3 text-base md:text-lg rounded-full cursor-pointer transition-colors"
+                className="absolute top-4 md:top-5 lg:top-6 right-4 md:right-5 lg:right-6 text-gray-400 hover:text-gray-600"
               >
-                Cancelar
+                <X className="size-5 md:size-6 lg:size-7" />
               </button>
-              <button
-                onClick={handleLogout}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 md:py-3 text-base md:text-lg rounded-full cursor-pointer transition-colors"
-              >
+              <h3 className="text-base md:text-xl lg:text-2xl font-semibold text-gray-800 mb-4 md:mb-5">
                 Cerrar sesión
+              </h3>
+              <p className="text-sm md:text-base text-gray-600 mb-6 md:mb-8">
+                ¿Estás seguro de que deseas cerrar sesión?
+              </p>
+              <div className="flex gap-3 md:gap-4">
+                <button
+                  onClick={() => setIsLogoutModalOpen(false)}
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 md:py-3 text-base md:text-lg rounded-full cursor-pointer transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 md:py-3 text-base md:text-lg rounded-full cursor-pointer transition-colors"
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {/* Error Modal */}
+      {errorMessage &&
+        createPortal(
+          <div
+            className="fixed inset-0 flex items-end justify-center"
+            style={{ zIndex: 99999 }}
+          >
+            <div
+              className="absolute inset-0 bg-black/40"
+              onClick={() => setErrorMessage(null)}
+            />
+            <div className="relative bg-white rounded-t-4xl w-full mx-4 p-6 md:p-7 lg:p-8">
+              <button
+                onClick={() => setErrorMessage(null)}
+                className="absolute top-4 md:top-5 lg:top-6 right-4 md:right-5 lg:right-6 text-gray-400 hover:text-gray-600"
+              >
+                <X className="size-5 md:size-6 lg:size-7" />
+              </button>
+              <div className="flex items-center gap-3 mb-4 md:mb-5">
+                <CircleAlert className="size-6 md:size-7 text-red-500 flex-shrink-0" />
+                <h3 className="text-base md:text-xl lg:text-2xl font-semibold text-gray-800">
+                  Error
+                </h3>
+              </div>
+              <p className="text-sm md:text-base text-gray-600 mb-6 md:mb-8">
+                {errorMessage}
+              </p>
+              <button
+                onClick={() => setErrorMessage(null)}
+                className="w-full bg-even-grass text-even-evergreen py-2 md:py-3 text-base md:text-lg rounded-full cursor-pointer hover:opacity-90 transition-opacity"
+              >
+                Entendido
               </button>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

@@ -1207,7 +1207,9 @@ export default function DishDetailPage() {
                     value={specialInstructions}
                     onChange={(e) => setSpecialInstructions(e.target.value)}
                     maxLength={60}
-                    onBlur={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    onBlur={() =>
+                      window.scrollTo({ top: 0, behavior: "smooth" })
+                    }
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         e.preventDefault();
@@ -1265,7 +1267,7 @@ export default function DishDetailPage() {
                 <span className="text-base md:text-lg font-medium">
                   {dishData.isOutOfStock
                     ? "Producto agotado"
-                    : `Agregar • $${(totalPrice * dishQuantity).toFixed(2)}`}
+                    : `Agregar • $${(totalPrice * dishQuantity).toFixed(2)} MXN`}
                 </span>
               </button>
             </div>
@@ -1280,7 +1282,7 @@ export default function DishDetailPage() {
           onClick={() => setIsReviewModalOpen(false)}
         >
           <div
-            className="bg-white w-full mx-4 md:mx-6 lg:mx-8 rounded-t-4xl overflow-y-auto z-999 max-h-[85vh] animate-slide-up"
+            className="bg-white w-full rounded-t-4xl overflow-y-auto z-999 max-h-[85vh] animate-slide-up"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="w-full flex justify-end">

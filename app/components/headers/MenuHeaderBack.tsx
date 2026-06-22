@@ -12,6 +12,7 @@ import { apiService } from "../../utils/api";
 interface MenuHeaderProps {
   restaurant: Restaurant;
   tableNumber?: string;
+  onBack?: () => void;
 }
 
 interface UserImageData {
@@ -24,6 +25,7 @@ interface UserImageData {
 export default function MenuHeaderBack({
   restaurant,
   tableNumber,
+  onBack,
 }: MenuHeaderProps) {
   const router = useRouter();
   const { state } = useTable();
@@ -36,7 +38,9 @@ export default function MenuHeaderBack({
   const { user, profile, isLoading } = useAuth();
 
   const handleBack = () => {
-    if (pathname?.includes("payment-options")) {
+    if (onBack) {
+      onBack();
+    } else if (pathname?.includes("payment-options")) {
       navigateWithTable("/order");
     } else {
       router.back();

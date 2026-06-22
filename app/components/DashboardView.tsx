@@ -1,26 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import ProfileTab from "./dashboard/ProfileTab";
-import CardsTab from "./dashboard/CardsTab";
-import HistoryTab from "./dashboard/HistoryTab";
-import SupportTab from "./dashboard/SupportTab";
 import DashboardHeader from "./headers/DashboardHeader";
 import { useAuth } from "../context/AuthContext";
 import { Loader2 } from "lucide-react";
 
+const CardsTab = lazy(() => import("./dashboard/CardsTab"));
+const HistoryTab = lazy(() => import("./dashboard/HistoryTab"));
+const SupportTab = lazy(() => import("./dashboard/SupportTab"));
+
 interface DashboardViewProps {
   onClose?: () => void;
   onLogout?: () => void;
+  initialTab?: "profile" | "cards" | "history" | "support";
 }
 
 export default function DashboardView({
   onClose,
   onLogout,
+  initialTab,
 }: DashboardViewProps = {}) {
   const [activeTab, setActiveTab] = useState<
     "profile" | "cards" | "history" | "support"
-  >("profile");
+  >(initialTab || "profile");
 
   // States for Support Tab (Pepper chat)
   const [supportMessages, setSupportMessages] = useState<
@@ -28,14 +31,29 @@ export default function DashboardView({
   >([]);
   const [supportSessionId, setSupportSessionId] = useState<string | null>(null);
 
-  const { profile, isLoading } = useAuth();
+  const { user, profile, isLoading } = useAuth();
+  const isAuthenticated = !!user;
 
   if (isLoading) {
     return (
       <div
         className={`flex items-center justify-center ${onClose ? "h-full" : "h-dvh brand-evergreen"}`}
       >
-        <Loader2 className="size-12 animate-spin text-white" />
+        <Loader2 className="size-12 animate-spin text-even-shamrock" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div
+        className={`flex items-center justify-center ${onClose ? "h-full" : "h-dvh brand-evergreen"}`}
+      >
+        <p
+          className={`text-base md:text-lg ${onClose ? "text-black/60" : "text-white/60"}`}
+        >
+          Inicia sesión para ver tu perfil
+        </p>
       </div>
     );
   }
@@ -82,7 +100,7 @@ export default function DashboardView({
 
               <button
                 onClick={() => setActiveTab("profile")}
-                className={`relative px-3 md:px-4 lg:px-5 py-0.5 md:py-1 lg:py-1.5 rounded-full cursor-pointer whitespace-nowrap text-base md:text-lg lg:text-xl transition-colors duration-300 ${
+                className={`relative px-1.5 md:px-3 lg:px-4 py-0.5 md:py-1 lg:py-1.5 rounded-full cursor-pointer whitespace-nowrap text-xs md:text-sm lg:text-lg transition-colors duration-300 ${
                   activeTab === "profile"
                     ? "text-white"
                     : "text-gray-500 hover:bg-gray-100"
@@ -92,7 +110,7 @@ export default function DashboardView({
               </button>
               <button
                 onClick={() => setActiveTab("support")}
-                className={`relative px-3 py-0.5 rounded-full cursor-pointer whitespace-nowrap text-base md:text-lg lg:text-xl transition-colors duration-300 ${
+                className={`relative px-1.5 md:px-3 lg:px-4 py-0.5 md:py-1 lg:py-1.5 rounded-full cursor-pointer whitespace-nowrap text-xs md:text-sm lg:text-lg transition-colors duration-300 ${
                   activeTab === "support"
                     ? "text-white"
                     : "text-gray-500 hover:bg-gray-100"
@@ -102,7 +120,7 @@ export default function DashboardView({
               </button>
               <button
                 onClick={() => setActiveTab("history")}
-                className={`relative px-3 py-0.5 rounded-full cursor-pointer whitespace-nowrap text-base md:text-lg lg:text-xl transition-colors duration-300 ${
+                className={`relative px-1.5 md:px-3 lg:px-4 py-0.5 md:py-1 lg:py-1.5 rounded-full cursor-pointer whitespace-nowrap text-xs md:text-sm lg:text-lg transition-colors duration-300 ${
                   activeTab === "history"
                     ? "text-white"
                     : "text-gray-500 hover:bg-gray-100"
@@ -110,10 +128,9 @@ export default function DashboardView({
               >
                 Historial
               </button>
-
               <button
                 onClick={() => setActiveTab("cards")}
-                className={`relative px-3 py-0.5 rounded-full cursor-pointer whitespace-nowrap text-base md:text-lg lg:text-xl transition-colors duration-300 ${
+                className={`relative px-1.5 md:px-3 lg:px-4 py-0.5 md:py-1 lg:py-1.5 rounded-full cursor-pointer whitespace-nowrap text-xs md:text-sm lg:text-lg transition-colors duration-300 ${
                   activeTab === "cards"
                     ? "text-white"
                     : "text-gray-500 hover:bg-gray-100"
@@ -127,17 +144,25 @@ export default function DashboardView({
             <div
               className={`flex-1 flex flex-col overflow-y-auto pb-6 min-h-0 ${activeTab === "support" || activeTab === "cards" ? "relative" : ""}`}
             >
-              {activeTab === "profile" && <ProfileTab onLogout={onLogout} />}
-              {activeTab === "cards" && <CardsTab />}
-              {activeTab === "history" && <HistoryTab />}
-              {activeTab === "support" && (
-                <SupportTab
-                  messages={supportMessages}
-                  setMessages={setSupportMessages}
-                  sessionId={supportSessionId}
-                  setSessionId={setSupportSessionId}
-                />
-              )}
+              <Suspense
+                fallback={
+                  <div className="flex items-center justify-center py-12 md:py-16 lg:py-20">
+                    <Loader2 className="size-8 md:size-10 lg:size-12 animate-spin text-even-shamrock" />
+                  </div>
+                }
+              >
+                {activeTab === "profile" && <ProfileTab onLogout={onLogout} />}
+                {activeTab === "cards" && <CardsTab />}
+                {activeTab === "history" && <HistoryTab />}
+                {activeTab === "support" && (
+                  <SupportTab
+                    messages={supportMessages}
+                    setMessages={setSupportMessages}
+                    sessionId={supportSessionId}
+                    setSessionId={setSupportSessionId}
+                  />
+                )}
+              </Suspense>
             </div>
           </div>
         </div>

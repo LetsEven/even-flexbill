@@ -132,6 +132,9 @@ function MenuView({ tableNumber }: MenuViewProps) {
   const [isPepperClosing, setIsPepperClosing] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [isSettingsClosing, setIsSettingsClosing] = useState(false);
+  const [dashboardInitialTab, setDashboardInitialTab] = useState<
+    "profile" | "cards" | "history" | "support"
+  >("profile");
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [showClosedModal, setShowClosedModal] = useState(false);
   const [showReorderModal, setShowReorderModal] = useState(false);
@@ -152,6 +155,16 @@ function MenuView({ tableNumber }: MenuViewProps) {
     }
     return unlockScroll;
   }, [showPepperChat, showSettingsModal, showReorderModal, isStatusModalOpen]);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("dashboard") === "cards") {
+      setDashboardInitialTab("cards");
+      setShowSettingsModal(true);
+      url.searchParams.delete("dashboard");
+      window.history.replaceState({}, "", url);
+    }
+  }, []);
 
   // Precargar chunks lazy después de que la página ya es interactiva
   useEffect(() => {
@@ -315,7 +328,7 @@ function MenuView({ tableNumber }: MenuViewProps) {
             {/* Settings Icon */}
             <button
               onClick={() => setShowSettingsModal(true)}
-              className="bg-white rounded-full border border-gray-400 shadow-sm hover:bg-gray-50 transition-all active:scale-95 size-9 md:size-10 lg:size-12 overflow-hidden flex items-center justify-center"
+              className="bg-white rounded-full shadow-sm hover:bg-gray-50 transition-all active:scale-95 size-9 md:size-10 lg:size-12 overflow-hidden flex items-center justify-center"
             >
               <UserAvatar isAuthenticated={isAuthenticated} profile={profile} />
             </button>
@@ -586,6 +599,7 @@ function MenuView({ tableNumber }: MenuViewProps) {
                   <DashboardView
                     onClose={closeSettingsModal}
                     onLogout={handleSettingsLogout}
+                    initialTab={dashboardInitialTab}
                   />
                 </div>
               ) : (

@@ -25,7 +25,7 @@ import ValidationError from "@/app/components/ValidationError";
 export default function PaymentSuccessPage() {
   const { validationError, restaurantId } = useValidateAccess();
   const { restaurant } = useRestaurant();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
 
   const { state } = useTable();
   const { navigateWithTable } = useTableNavigation();
@@ -42,7 +42,6 @@ export default function PaymentSuccessPage() {
 
   // Try to get stored payment details
   const [paymentDetails, setPaymentDetails] = useState<any>(null);
-  const [ordersMarkedAsPaid, setOrdersMarkedAsPaid] = useState(false);
   const [rating, setRating] = useState(0); // Rating de 1 a 5 (solo enteros)
   const [hoveredRating, setHoveredRating] = useState(0);
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
@@ -51,9 +50,7 @@ export default function PaymentSuccessPage() {
   const cameFromAuth =
     typeof window !== "undefined" &&
     sessionStorage.getItem("even-post-auth-redirect");
-  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(
-    !isAuthenticated && !cameFromAuth,
-  );
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
   // Limpiar el flag de redirect después de cargar
   useEffect(() => {
@@ -61,6 +58,13 @@ export default function PaymentSuccessPage() {
       sessionStorage.removeItem("even-post-auth-redirect");
     }
   }, [cameFromAuth]);
+
+  useEffect(() => {
+    if (isAuthLoading) return;
+    if (!isAuthenticated && !cameFromAuth) {
+      setIsRegisterModalOpen(true);
+    }
+  }, [isAuthLoading, isAuthenticated, cameFromAuth]);
 
   // Handler for sign up navigation
   const handleSignUp = () => {
@@ -477,7 +481,10 @@ export default function PaymentSuccessPage() {
                       Mesa {state.tableNumber || tableNumber || "N/A"}
                     </p>
                     <p className="text-xs md:text-sm text-white/70 mt-1">
-                      {new Date().toLocaleTimeString("es-MX", {
+                      {new Date(
+                        paymentDetails?.tableSummary?.data?.data?.created_at ||
+                          Date.now(),
+                      ).toLocaleTimeString("es-MX", {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
@@ -510,7 +517,10 @@ export default function PaymentSuccessPage() {
                       <Calendar className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 text-blue-600" />
                     </div>
                     <span className="text-sm md:text-base lg:text-lg">
-                      {new Date()
+                      {new Date(
+                        paymentDetails?.tableSummary?.data?.data?.created_at ||
+                          Date.now(),
+                      )
                         .toLocaleDateString("es-MX", {
                           day: "2-digit",
                           month: "2-digit",
@@ -520,7 +530,9 @@ export default function PaymentSuccessPage() {
                     </span>
                   </div>
 
-                  {paymentDetails?.cardLast4 && (
+                  {(paymentDetails?.cardLast4 ||
+                    paymentDetails?.cardBrand === "apple" ||
+                    paymentDetails?.cardBrand === "google") && (
                     <div className="flex items-center gap-2 md:gap-3 lg:gap-4 text-white/90">
                       <div className="bg-green-100 p-2 md:p-2.5 lg:p-3 rounded-xl flex items-center justify-center">
                         <div className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 flex items-center justify-center">
@@ -559,11 +571,21 @@ export default function PaymentSuccessPage() {
                           className="flex justify-between items-center gap-3 md:gap-4 lg:gap-5"
                         >
                           {/* Image */}
-                          <img
-                            src={dish.images[0] || "/even/even-asterisk-grass.svg"}
-                            alt={dish.item}
-                            className="size-14 md:size-16 lg:size-20 object-cover rounded-lg md:rounded-xl flex-shrink-0"
-                          />
+                          <div className="size-14 md:size-16 lg:size-20 bg-gray-300 rounded-lg md:rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden">
+                            {dish.images?.[0] ? (
+                              <img
+                                src={dish.images[0]}
+                                alt={dish.item}
+                                className="w-full h-full object-cover rounded-lg md:rounded-xl"
+                              />
+                            ) : (
+                              <img
+                                src="/even/even-asterisk-evergreen.svg"
+                                alt="Logo Even"
+                                className="size-7 md:size-9 lg:size-11 object-contain"
+                              />
+                            )}
+                          </div>
                           <div className="flex-1">
                             <p className="text-white font-medium text-base md:text-lg lg:text-xl">
                               {dish.quantity}x {dish.item}
