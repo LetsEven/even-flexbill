@@ -28,7 +28,7 @@ export default function CardSelectionPage() {
   const { validationError, restaurantId, branchNumber } = useValidateAccess();
   const { restaurant } = useRestaurant();
   const { provider, isLoadingProvider } = usePaymentProvider(restaurantId);
-  const { isAgentRequired, isAgentDisconnected, isTurnoClosed } = useAgentStatus(
+  const { isAgentRequired, isAgentDisconnected, isTurnoClosed, isLoadingAgentStatus } = useAgentStatus(
     restaurantId,
     branchNumber ? parseInt(branchNumber) : null,
   );
@@ -1284,7 +1284,7 @@ export default function CardSelectionPage() {
                       ))}
 
                     {/* Apple Pay Button */}
-                    {!applePayUnavailable && !isPOSBlocked && (
+                    {!applePayUnavailable && !isLoadingAgentStatus && !isPOSBlocked && (
                       <div className="relative w-full h-[48px]">
                         <div id="apple-pay-container" className="w-full" />
                         {!applePayReady && (
@@ -1309,7 +1309,7 @@ export default function CardSelectionPage() {
                     )}
 
                     {/* Google Pay Button */}
-                    {!googlePayUnavailable && !isPOSBlocked && (
+                    {!googlePayUnavailable && !isLoadingAgentStatus && !isPOSBlocked && (
                       <div className="relative w-full h-[48px]">
                         <div id="google-pay-container" className="w-full" />
                         {!googlePayReady && (
