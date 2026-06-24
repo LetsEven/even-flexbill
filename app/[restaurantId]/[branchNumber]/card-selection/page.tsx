@@ -16,6 +16,8 @@ import { useValidateAccess } from "@/app/hooks/useValidateAccess";
 import ValidationError from "@/app/components/ValidationError";
 import { paymentService } from "@/app/services/payment.service";
 import { useAgentStatus } from "@/app/hooks/useAgentStatus";
+import { useRestaurant } from "@/app/context/RestaurantContext";
+import POSBlockedModal from "@/app/components/POSBlockedModal";
 
 import { Plus, Trash2, Loader2, CircleAlert, X } from "lucide-react";
 import { getCardTypeIcon } from "@/app/utils/cardIcons";
@@ -24,11 +26,13 @@ import { useMsiConfig } from "@/app/hooks/useMsiConfig";
 
 export default function CardSelectionPage() {
   const { validationError, restaurantId, branchNumber } = useValidateAccess();
+  const { restaurant } = useRestaurant();
   const { provider, isLoadingProvider } = usePaymentProvider(restaurantId);
-  const { isAgentRequired } = useAgentStatus(
+  const { isAgentRequired, isAgentDisconnected, isTurnoClosed } = useAgentStatus(
     restaurantId,
     branchNumber ? parseInt(branchNumber) : null,
   );
+  const isPOSBlocked = isAgentDisconnected || isTurnoClosed;
   const { msiConfig } = useMsiConfig();
   const { state, dispatch, loadTableData } = useTable();
   const { navigateWithTable } = useTableNavigation();
@@ -131,6 +135,8 @@ export default function CardSelectionPage() {
   const [showPaymentAnimation, setShowPaymentAnimation] = useState(false);
   const [isLoadingInitial, setIsLoadingInitial] = useState(true);
   const [isTableDataReady, setIsTableDataReady] = useState(false);
+  const [showPOSModal, setShowPOSModal] = useState(false);
+  const [posModalReason, setPosModalReason] = useState<"turno_closed" | "agent_disconnected">("turno_closed");
   const [showTotalModal, setShowTotalModal] = useState(false);
   const [showPaymentOptionsModal, setShowPaymentOptionsModal] = useState(false);
   const [selectedMSI, setSelectedMSI] = useState<number | null>(null);
@@ -743,6 +749,11 @@ export default function CardSelectionPage() {
   }, [isLoadingInitial, totalAmountCharged]);
 
   const handlePayment = async (): Promise<void> => {
+    if (isPOSBlocked) {
+      setPosModalReason(isTurnoClosed ? "turno_closed" : "agent_disconnected");
+      setShowPOSModal(true);
+      return;
+    }
     // Validar selección de tarjeta si hay métodos de pago disponibles
     if (!selectedPaymentMethodId) {
       setErrorMessage("Por favor selecciona una tarjeta de pago");
@@ -1273,7 +1284,7 @@ export default function CardSelectionPage() {
                       ))}
 
                     {/* Apple Pay Button */}
-                    {!applePayUnavailable && (
+                    {!applePayUnavailable && !isPOSBlocked && (
                       <div className="relative w-full h-[48px]">
                         <div id="apple-pay-container" className="w-full" />
                         {!applePayReady && (
@@ -1298,7 +1309,7 @@ export default function CardSelectionPage() {
                     )}
 
                     {/* Google Pay Button */}
-                    {!googlePayUnavailable && (
+                    {!googlePayUnavailable && !isPOSBlocked && (
                       <div className="relative w-full h-[48px]">
                         <div id="google-pay-container" className="w-full" />
                         {!googlePayReady && (
@@ -1357,19 +1368,12 @@ export default function CardSelectionPage() {
         <div
           className={`fixed bottom-0 left-0 right-0 bg-white mx-4 px-8 z-90 py-6 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] transition-opacity duration-200 ${showPaymentAnimation ? "opacity-0 pointer-events-none" : ""}`}
         >
-          {isAgentRequired && (
-            <p className="text-red-500 text-xs text-center mb-4">
-              El sistema de caja no está disponible en este momento. Intenta más
-              tarde.
-            </p>
-          )}
           <button
             onClick={handlePayment}
-            disabled={isProcessing || isUnderMinimum || isAgentRequired}
+            disabled={isProcessing || isUnderMinimum}
             className={`py-3 text-white rounded-full cursor-pointer font-normal h-fit w-full flex items-center justify-center text-base active:scale-95 transition-transform ${
               isProcessing ||
               isUnderMinimum ||
-              isAgentRequired ||
               (hasPaymentMethods && !selectedPaymentMethodId)
                 ? "bg-even-grass text-even-evergreen opacity-50 cursor-not-allowed px-10"
                 : "bg-even-grass text-even-evergreen px-10 animate-pulse-button"
@@ -1665,6 +1669,13 @@ export default function CardSelectionPage() {
           </div>
         </div>
       )}
+      <POSBlockedModal
+        isOpen={showPOSModal}
+        onClose={() => setShowPOSModal(false)}
+        reason={posModalReason}
+        restaurantName={restaurant?.name}
+        restaurantLogo={restaurant?.logo_url}
+      />
     </>
   );
 }

@@ -11,9 +11,26 @@ import { paymentService } from "@/app/services/payment.service";
 import { ChevronRight, DollarSign, ReceiptText } from "lucide-react";
 import { useValidateAccess } from "@/app/hooks/useValidateAccess";
 import ValidationError from "@/app/components/ValidationError";
+import { useAgentStatus } from "@/app/hooks/useAgentStatus";
+import { useRestaurant } from "@/app/context/RestaurantContext";
+import POSBlockedModal from "@/app/components/POSBlockedModal";
 
 export default function PaymentOptionsPage() {
   const { validationError, restaurantId, branchNumber } = useValidateAccess();
+  const { restaurant } = useRestaurant();
+  const { isAgentDisconnected, isTurnoClosed } = useAgentStatus(restaurantId, branchNumber);
+  const isPOSBlocked = isAgentDisconnected || isTurnoClosed;
+  const [showPOSModal, setShowPOSModal] = useState(false);
+  const [posModalReason, setPosModalReason] = useState<"turno_closed" | "agent_disconnected">("turno_closed");
+
+  const checkPOSBlock = () => {
+    if (isPOSBlocked) {
+      setPosModalReason(isTurnoClosed ? "turno_closed" : "agent_disconnected");
+      setShowPOSModal(true);
+      return true;
+    }
+    return false;
+  };
   const searchParams = useSearchParams();
 
   const { state, dispatch, loadTableData, loadActiveUsers } = useTable();
@@ -223,6 +240,7 @@ export default function PaymentOptionsPage() {
     state.splitPayments.length > 0;
 
   const handlePayFullBill = () => {
+    if (checkPOSBlock()) return;
     if (unpaidAmount <= 0) {
       alert("No hay cuenta pendiente por pagar");
       return;
@@ -237,6 +255,7 @@ export default function PaymentOptionsPage() {
   };
 
   const handleSelectItems = () => {
+    if (checkPOSBlock()) return;
     if (unpaidDishes.length === 0) {
       alert("No hay platillos pendientes por pagar");
       return;
@@ -251,6 +270,7 @@ export default function PaymentOptionsPage() {
   };
 
   const handleEqualShares = () => {
+    if (checkPOSBlock()) return;
     if (unpaidAmount <= 0) {
       alert("No hay cuenta pendiente por pagar");
       return;
@@ -269,6 +289,7 @@ export default function PaymentOptionsPage() {
   };
 
   const handleChooseAmount = () => {
+    if (checkPOSBlock()) return;
     if (unpaidAmount <= 0) {
       alert("No hay cuenta pendiente por pagar");
       return;
@@ -283,6 +304,7 @@ export default function PaymentOptionsPage() {
   };
 
   const handlePayCurrentUser = () => {
+    if (checkPOSBlock()) return;
     if (currentUserUnpaidAmount <= 0) {
       alert("No tienes platillos pendientes por pagar");
       return;
@@ -540,6 +562,13 @@ export default function PaymentOptionsPage() {
           </div>
         </div>
       </div>
+      <POSBlockedModal
+        isOpen={showPOSModal}
+        onClose={() => setShowPOSModal(false)}
+        reason={posModalReason}
+        restaurantName={restaurant?.name}
+        restaurantLogo={restaurant?.logo_url}
+      />
     </div>
   );
 }

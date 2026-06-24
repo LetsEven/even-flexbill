@@ -11,6 +11,8 @@ import OrderAnimation from "@/app/components/UI/OrderAnimation";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRestaurant } from "@/app/context/RestaurantContext";
 import { useGuest } from "@/app/context/GuestContext";
+import { useAgentStatus } from "@/app/hooks/useAgentStatus";
+import POSBlockedModal from "@/app/components/POSBlockedModal";
 
 export default function CartView() {
   const {
@@ -26,8 +28,12 @@ export default function CartView() {
   const restaurantData = getRestaurantData();
   const { user, isAuthenticated, isLoading, profile, refreshProfile } =
     useAuth();
-  const { branchNumber } = useRestaurant();
+  const { restaurantId, branchNumber, restaurant } = useRestaurant();
   const { guestName } = useGuest();
+  const { agentStatus } = useAgentStatus(restaurantId, branchNumber);
+  const hasActivePOS = agentStatus !== null && agentStatus.hasIntegration && agentStatus.isActive;
+  const [showPOSModal, setShowPOSModal] = useState(false);
+  const [posModalReason, setPosModalReason] = useState<"turno_closed" | "agent_disconnected">("turno_closed");
 
   // Si el usuario está autenticado pero el perfil no cargó (ej. error de red al
   // volver de fondo en móvil), intentar cargarlo para que el checkout funcione.
@@ -43,7 +49,31 @@ export default function CartView() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:5000";
+
   const handleOrder = async () => {
+    if (hasActivePOS && restaurantId && branchNumber) {
+      try {
+        const res = await fetch(
+          `${API_BASE_URL}/api/pos/restaurant/${restaurantId}/branch/${branchNumber}/attempt-order`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ identifier: `Mesa ${tableState.tableNumber}` }),
+          },
+        );
+        const data = await res.json();
+        if (data.blocked) {
+          setPosModalReason(data.reason);
+          setShowPOSModal(true);
+          return;
+        }
+      } catch {
+        // network error — proceed
+      }
+    }
+
     // Si el usuario está loggeado, hacer la orden directamente con animación
     if (!isLoading && isAuthenticated && user) {
       setIsSubmitting(true);
@@ -403,6 +433,13 @@ export default function CartView() {
           onConfirm={handleConfirmOrder}
         />
       )}
+      <POSBlockedModal
+        isOpen={showPOSModal}
+        onClose={() => setShowPOSModal(false)}
+        reason={posModalReason}
+        restaurantName={restaurant?.name}
+        restaurantLogo={restaurant?.logo_url}
+      />
     </div>
   );
 }
