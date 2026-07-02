@@ -16,9 +16,13 @@ import {
   CircleAlert,
   LogIn,
   UserCircle2,
+  FileText,
 } from "lucide-react";
 import { getCardTypeIcon } from "@/app/utils/cardIcons";
 import { useAuth } from "@/app/context/AuthContext";
+import InvoiceModal from "@/app/components/modals/InvoiceModal";
+import { invoiceService } from "@/app/services/invoice.service";
+import { lockScroll, unlockScroll } from "@/app/utils/scrollLock";
 import { useValidateAccess } from "@/app/hooks/useValidateAccess";
 import ValidationError from "@/app/components/ValidationError";
 
@@ -47,6 +51,8 @@ export default function PaymentSuccessPage() {
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
   const [isBreakdownModalOpen, setIsBreakdownModalOpen] = useState(false);
   const [hasRated, setHasRated] = useState(false); // Track if user has already rated
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+  const [existingInvoiceId, setExistingInvoiceId] = useState<string | null>(null);
   const cameFromAuth =
     typeof window !== "undefined" &&
     sessionStorage.getItem("even-post-auth-redirect");
@@ -95,18 +101,17 @@ export default function PaymentSuccessPage() {
     };
   }, []);
 
-  // Bloquear scroll cuando los modales están abiertos
   useEffect(() => {
-    if (isTicketModalOpen || isBreakdownModalOpen || isRegisterModalOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
+    if (isTicketModalOpen) { lockScroll(); return unlockScroll; }
+  }, [isTicketModalOpen]);
 
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isTicketModalOpen, isBreakdownModalOpen, isRegisterModalOpen]);
+  useEffect(() => {
+    if (isBreakdownModalOpen) { lockScroll(); return unlockScroll; }
+  }, [isBreakdownModalOpen]);
+
+  useEffect(() => {
+    if (isRegisterModalOpen) { lockScroll(); return unlockScroll; }
+  }, [isRegisterModalOpen]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -222,6 +227,15 @@ export default function PaymentSuccessPage() {
   };
 
   // Calculate total amount charged to client
+  // Check if a factura already exists for this transaction
+  useEffect(() => {
+    const transactionId = paymentDetails?.transactionId || paymentDetails?.paymentId || paymentId;
+    if (!transactionId) return;
+    invoiceService.getTransactionInvoice(transactionId).then((info) => {
+      if (info?.invoiceId) setExistingInvoiceId(info.invoiceId);
+    }).catch(() => {});
+  }, [paymentDetails, paymentId]);
+
   const amount =
     paymentDetails?.totalAmountCharged || paymentDetails?.amount || urlAmount;
 
@@ -425,6 +439,20 @@ export default function PaymentSuccessPage() {
                 Ir al menú
               </button>
 
+              {/* Facturar btn */}
+              {restaurant?.billing_enabled !== false && (
+                <button
+                  onClick={() => setIsInvoiceModalOpen(true)}
+                  className="text-base md:text-lg lg:text-xl w-full flex items-center justify-center gap-2 md:gap-3 lg:gap-4 text-black border border-black py-3 md:py-4 lg:py-5 rounded-full cursor-pointer transition-colors bg-white hover:bg-stone-100"
+                >
+                  <FileText
+                    className="size-5 md:size-6 lg:size-7"
+                    strokeWidth={1.5}
+                  />
+                  {existingInvoiceId ? "Ver factura" : "Facturar"}
+                </button>
+              )}
+
               {/* Ticket btn */}
               <button
                 onClick={() => setIsTicketModalOpen(true)}
@@ -440,6 +468,16 @@ export default function PaymentSuccessPage() {
           </div>
         </div>
       </div>
+
+      <InvoiceModal
+        isOpen={isInvoiceModalOpen}
+        onClose={() => setIsInvoiceModalOpen(false)}
+        transactionId={paymentDetails?.transactionId || paymentDetails?.paymentId || paymentId || ""}
+        restaurantId={restaurant?.id ?? 0}
+        isAuthenticated={isAuthenticated}
+        existingInvoiceId={existingInvoiceId}
+        onInvoiceCreated={(id) => setExistingInvoiceId(id)}
+      />
 
       {/* Ticket Modal */}
       {isTicketModalOpen && (

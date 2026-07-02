@@ -3,8 +3,11 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "@/app/context/AuthContext";
-import { Loader2, ChevronRight, X, Calendar, Utensils } from "lucide-react";
+import { Loader2, ChevronRight, X, Calendar, Utensils, FileText, Download } from "lucide-react";
 import { getCardTypeIcon } from "@/app/utils/cardIcons";
+import InvoiceModal from "@/app/components/modals/InvoiceModal";
+import { invoiceService } from "@/app/services/invoice.service";
+import { lockScroll, unlockScroll } from "@/app/utils/scrollLock";
 
 interface OrderHistoryItem {
   orderType?:
@@ -37,15 +40,29 @@ interface OrderHistoryItem {
   paymentCardLastFour?: string | null;
   paymentCardType?: string | null;
   paymentCardBrand?: string | null;
+  // Invoice fields
+  transactionId?: string | null;
+  facturapiInvoiceId?: string | null;
+  invoiceStatus?: string | null;
+  invoicedViaConsolidation?: boolean;
+  billingEnabled?: boolean;
+}
+
+function isCurrentMonth(dateStr: string): boolean {
+  const date = new Date(dateStr);
+  const now = new Date();
+  return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
 }
 
 export default function HistoryTab() {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [orders, setOrders] = useState<OrderHistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<any>(null);
   const [displayCount, setDisplayCount] = useState(5);
+  const [invoiceModalOrder, setInvoiceModalOrder] = useState<OrderHistoryItem | null>(null);
+  const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<string | null>(null);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -73,28 +90,30 @@ export default function HistoryTab() {
     }
   };
 
-  // Bloquear scroll cuando el modal está abierto
-  /*useEffect(() => {
-    if (selectedOrderDetails) {
-      // Bloquear scroll en body y html para móviles
-      const scrollY = window.scrollY;
-      document.body.style.position = "fixed";
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = "100%";
-      document.body.style.overflow = "hidden";
-      document.documentElement.style.overflow = "hidden";
+  useEffect(() => {
+    if (selectedOrderDetails) { lockScroll(); return unlockScroll; }
+  }, [selectedOrderDetails]);
 
-      return () => {
-        // Restaurar scroll
-        document.body.style.position = "";
-        document.body.style.top = "";
-        document.body.style.width = "";
-        document.body.style.overflow = "";
-        document.documentElement.style.overflow = "";
-        window.scrollTo(0, scrollY);
-      };
+  useEffect(() => {
+    if (invoiceModalOrder) { lockScroll(); return unlockScroll; }
+  }, [invoiceModalOrder]);
+
+  const handleDownload = async (invoiceId: string, restaurantId: number) => {
+    setDownloadingInvoiceId(invoiceId);
+    try {
+      const blob = await invoiceService.downloadInvoicePdf(invoiceId, restaurantId);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `factura-${invoiceId}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      // silently ignore download errors
+    } finally {
+      setDownloadingInvoiceId(null);
     }
-  }, [selectedOrderDetails]);*/
+  };
 
   useEffect(() => {
     const fetchOrderHistory = async () => {
@@ -458,16 +477,68 @@ export default function HistoryTab() {
               </div>
 
               {/* Total Summary - Fixed */}
-              <div className="shrink-0 px-6 md:px-8 lg:px-10 flex justify-between items-center border-t border-white/20 pt-4 md:pt-5 lg:pt-6 pb-6 md:pb-8 lg:pb-10">
-                <span className="text-lg md:text-xl lg:text-2xl font-medium text-white">
-                  Total
-                </span>
-                <span className="text-lg md:text-xl lg:text-2xl font-medium text-white">
-                  ${selectedOrderDetails.totalAmount?.toFixed(2)} MXN
-                </span>
+              <div className="shrink-0 px-6 md:px-8 lg:px-10 border-t border-white/20 pt-4 md:pt-5 lg:pt-6 pb-6 md:pb-8 lg:pb-10 space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-lg md:text-xl lg:text-2xl font-medium text-white">
+                    Total
+                  </span>
+                  <span className="text-lg md:text-xl lg:text-2xl font-medium text-white">
+                    ${selectedOrderDetails.totalAmount?.toFixed(2)} MXN
+                  </span>
+                </div>
+                {/* Invoice actions */}
+                {!selectedOrderDetails.invoicedViaConsolidation && selectedOrderDetails.facturapiInvoiceId && (
+                  <button
+                    onClick={() => handleDownload(selectedOrderDetails.facturapiInvoiceId, selectedOrderDetails.restaurantId)}
+                    disabled={downloadingInvoiceId === selectedOrderDetails.facturapiInvoiceId}
+                    className="w-full flex items-center justify-center gap-2 bg-even-grass text-even-evergreen rounded-2xl py-3 font-medium text-sm disabled:opacity-50 hover:bg-even-grass/90 transition-colors"
+                  >
+                    {downloadingInvoiceId === selectedOrderDetails.facturapiInvoiceId ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4" />
+                    )}
+                    Descargar factura
+                  </button>
+                )}
+                {selectedOrderDetails.billingEnabled !== false && !selectedOrderDetails.invoicedViaConsolidation && !selectedOrderDetails.facturapiInvoiceId && isCurrentMonth(selectedOrderDetails.tableOrderDate) && (
+                  <button
+                    onClick={() => {
+                      setSelectedOrderDetails(null);
+                      setInvoiceModalOrder(selectedOrderDetails);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-2xl py-3 font-medium text-sm transition-colors"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Facturar
+                  </button>
+                )}
               </div>
             </div>
           </div>,
+          document.body,
+        )}
+
+      {invoiceModalOrder &&
+        createPortal(
+          <InvoiceModal
+            isOpen={true}
+            onClose={() => setInvoiceModalOrder(null)}
+            transactionId={invoiceModalOrder.transactionId || ""}
+            restaurantId={invoiceModalOrder.restaurantId ?? 0}
+            isAuthenticated={isAuthenticated}
+            existingInvoiceId={invoiceModalOrder.facturapiInvoiceId ?? null}
+            onInvoiceCreated={(invoiceId) => {
+              setOrders((prev) =>
+                prev.map((o) =>
+                  o.transactionId === invoiceModalOrder.transactionId
+                    ? { ...o, facturapiInvoiceId: invoiceId, invoiceStatus: "valid" }
+                    : o,
+                ),
+              );
+              setInvoiceModalOrder(null);
+            }}
+          />,
           document.body,
         )}
     </>

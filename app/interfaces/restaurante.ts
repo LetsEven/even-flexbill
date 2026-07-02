@@ -10,6 +10,7 @@ export interface Restaurant {
   phone: string | null;
   email: string | null;
   is_active: boolean;
+  billing_enabled?: boolean;
   opening_hours?: {
     [key: string]: {
       is_closed: boolean;
